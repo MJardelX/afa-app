@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Archivos temporales del CLI de Supabase (incluyen bundles minificados).
+    "supabase/.temp/**",
+    "supabase/.branches/**",
+    // Generado por `supabase gen types typescript`.
+    "src/types/database.ts",
   ]),
 ]);
 
