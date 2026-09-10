@@ -5,10 +5,10 @@ import { createServerClient } from "@supabase/ssr";
 import type { Database } from "@/types/database";
 
 /**
- * Cliente de Supabase para Server Components, Route Handlers y Server Actions.
- * Lee la sesión de las cookies, así que RLS aplica con el usuario real.
+ * Supabase client for Server Components, Route Handlers and Server Actions.
+ * Reads the session from cookies, so RLS applies with the real user.
  */
-export async function crearClienteServidor() {
+export async function createClient() {
   const cookieStore = await cookies();
 
   return createServerClient<Database>(
@@ -25,8 +25,8 @@ export async function crearClienteServidor() {
               cookieStore.set(name, value, options);
             }
           } catch {
-            // Los Server Components no pueden escribir cookies; el middleware
-            // ya refrescó la sesión. Ignorar es el comportamiento correcto.
+            // Server Components cannot write cookies; the proxy already
+            // refreshed the session. Ignoring is the correct behavior.
           }
         },
       },

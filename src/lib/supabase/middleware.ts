@@ -4,8 +4,8 @@ import { createServerClient } from "@supabase/ssr";
 
 import type { Database } from "@/types/database";
 
-/** Refresca el token de sesión en cada petición y protege las rutas privadas. */
-export async function actualizarSesion(request: NextRequest) {
+/** Refreshes the session token on every request and guards private routes. */
+export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient<Database>(
@@ -29,25 +29,26 @@ export async function actualizarSesion(request: NextRequest) {
     },
   );
 
-  // getUser() valida el token contra Supabase. No usar getSession() aquí:
-  // lee la cookie sin verificarla, y en el servidor eso no es confiable.
+  // getUser() validates the token against Supabase. Do not use getSession()
+  // here: it reads the cookie without verifying it, and on the server that is
+  // not trustworthy.
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
 
-  const esRutaPublica =
+  const isPublicRoute =
     pathname.startsWith("/login") ||
     pathname.startsWith("/auth") ||
     pathname === "/api/health";
 
-  if (!user && !esRutaPublica) {
-    // Las rutas de API responden 401 en JSON. Redirigirlas a /login le
-    // devolvería HTML a un fetch(), que es imposible de manejar en el cliente.
+  if (!user && !isPublicRoute) {
+    // API routes answer 401 in JSON. Redirecting them to /login would return
+    // HTML to a fetch(), which is impossible to handle on the client.
     if (pathname.startsWith("/api/")) {
       return NextResponse.json(
-        { ok: false, error: "No autenticado" },
+        { ok: false, error: "Not authenticated" },
         { status: 401 },
       );
     }

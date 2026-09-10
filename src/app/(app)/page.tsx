@@ -1,166 +1,450 @@
-import { ListaBarras } from "@/components/ui/barras";
 import {
-  EstadoAsistencia,
-  nivelDeAsistencia,
-} from "@/components/ui/estado-asistencia";
-import { Indicador, Tarjeta, TituloTarjeta } from "@/components/ui/tarjeta";
-import { crearClienteServidor } from "@/lib/supabase/server";
+  ArrowRight,
+  Bell,
+  CalendarCheck,
+  CheckCheck,
+  Sparkles,
+  TrendingDown,
+  TriangleAlert,
+  Users,
+} from "lucide-react";
+import Link from "next/link";
+import { getLocale, getTranslations } from "next-intl/server";
 
-export const metadata = { title: "Panel · AFA Manager" };
+import { Modules } from "@/components/app/modules";
+import { WelcomeBanner } from "@/components/app/welcome-banner";
+import {
+  AttendanceBadge,
+  attendanceLevel,
+} from "@/components/ui/attendance-badge";
+import { BarList } from "@/components/ui/bar-list";
+import { Card, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Metric } from "@/components/ui/metric";
+import { createClient } from "@/lib/supabase/server";
+import { cn } from "@/lib/utils";
 
-export default async function Panel() {
-  const supabase = await crearClienteServidor();
+export async function generateMetadata() {
+  const t = await getTranslations("dashboard");
+  return { title: t("metaTitle") };
+}
 
-  // Las tres consultas pasan por RLS: lo que devuelvan depende del rol.
-  const [{ data: jugadores }, { data: ranking }, { count: equipos }] =
-    await Promise.all([
-      supabase
-        .from("v_jugadores")
-        .select(
-          "id, codigo, nombre_completo, categoria, categoria_por_edad, edad_deportiva, fuera_de_categoria, sin_inscribir, estado",
-        )
-        .eq("estado", "activo"),
-      supabase
-        .from("v_ranking_equipo")
-        .select("jugador_id, nombre_completo, categoria, porcentaje, sesiones_convocadas"),
-      supabase.from("equipos").select("*", { count: "exact", head: true }),
-    ]);
+export default async function DashboardPage() {
+  const t = await getTranslations("dashboard");
+  const tRoles = await getTranslations("roles");
+  const tLevel = await getTranslations("attendanceLevel");
+  const locale = await getLocale();
 
-  const lista = jugadores ?? [];
-  const filas = ranking ?? [];
+  const supabase = await createClient();
 
-  const porCategoria = agrupar(lista);
-  const promedio = promedioAsistencia(filas);
-  const alertas = construirAlertas(lista, filas);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Everything goes through RLS: what each query returns depends on the role.
+  const [
+    { data: profile },
+    { data: academy },
+    { data: season },
+    { data: players },
+    { data: ranking },
+    { count: teams },
+    { count: categories },
+  ] = await Promise.all([
+    supabase
+      .from("perfiles")
+      .select("nombre_completo, rol")
+      .eq("id", user?.id ?? "")
+      .maybeSingle(),
+    supabase.from("academias").select("nombre").maybeSingle(),
+    supabase
+      .from("temporadas")
+      .select("nombre, fecha_inicio, fecha_fin")
+      .eq("activa", true)
+      .maybeSingle(),
+    supabase
+      .from("v_jugadores")
+      .select(
+        "id, codigo, nombre_completo, categoria, categoria_por_edad, edad_deportiva, fuera_de_categoria, sin_inscribir, sin_equipo, estado",
+      )
+      .eq("estado", "activo"),
+    supabase
+      .from("v_ranking_equipo")
+      .select(
+        "jugador_id, nombre_completo, categoria, porcentaje, sesiones_convocadas",
+      ),
+    supabase.from("equipos").select("*", { count: "exact", head: true }),
+    supabase.from("categorias").select("*", { count: "exact", head: true }),
+  ]);
+
+  const playerList = players ?? [];
+  const rankingRows = ranking ?? [];
+
+  const byCategory = groupByCategory(playerList);
+  const average = averageAttendance(rankingRows);
+  const lowCount = rankingRows.filter(
+    (r) => r.porcentaje !== null && r.porcentaje < 70,
+  ).length;
+  const alerts = buildAlerts(playerList, rankingRows, t);
+
+  const firstName =
+    (profile?.nombre_completo ?? "").trim().split(/\s+/)[0] || "";
+  const greeting = t(greetingKeyForHour());
+  const title = firstName
+    ? t("hello", { greeting, name: firstName })
+    : greeting;
+
+  const today = new Intl.DateTimeFormat(locale, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    timeZone: "America/Guatemala",
+  }).format(new Date());
+
+  const attendanceDelta =
+    average === null
+      ? undefined
+      : {
+          tone: (
+            { good: "up", fair: "warn", low: "down" } as const
+          )[attendanceLevel(average)],
+          label: tLevel(attendanceLevel(average)),
+        };
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-6">
-      <header>
-        <h1 className="text-xl font-semibold tracking-tight">Panel</h1>
-        <p className="mt-0.5 text-sm text-tenue">
-          Resumen de la academia al día de hoy.
-        </p>
-      </header>
+    // The layout adds top padding for every page's header; the dashboard's
+    // hero is happier flush to the top, so cancel it here.
+    <div className="space-y-6 -mt-4 lg:-mt-8">
+      <WelcomeBanner
+        kicker={
+          season?.nombre ? `${today} · ${season.nombre}` : today
+        }
+        title={title}
+        subtitle={buildSubtitle(t, {
+          alerts: alerts.length,
+          players: playerList.length,
+          average,
+        })}
+        stats={[
+          { label: t("statActivePlayers"), value: playerList.length },
+          { label: t("statCategories"), value: categories ?? 0 },
+          { label: t("statTeams"), value: teams ?? 0 },
+          {
+            label: t("statAvgAttendance"),
+            value: average === null ? "—" : `${average}%`,
+          },
+        ]}
+      />
 
-      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Indicador
-          titulo="Jugadores activos"
-          valor={lista.length}
-          detalle={plural(porCategoria.length, "categoría", "categorías")}
-        />
-        <Indicador titulo="Equipos" valor={equipos ?? 0} />
-        <Indicador
-          titulo="Asistencia promedio"
-          valor={promedio === null ? "—" : `${promedio}%`}
-          detalle={
-            promedio === null ? "Sin sesiones registradas" : "Sobre lo convocado"
+      <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <Metric
+          title={t("metricActivePlayers")}
+          value={playerList.length}
+          foot={
+            byCategory.length > 0
+              ? t("metricActivePlayersWith", { count: byCategory.length })
+              : t("metricActivePlayersNone")
           }
-          acento
+          tone="brand"
+          icon={<Users strokeWidth={1.75} />}
         />
-        <Indicador
-          titulo="Alertas"
-          valor={alertas.length}
-          detalle={alertas.length === 0 ? "Todo en orden" : "Requieren atención"}
+
+        <Metric
+          title={t("metricAvgAttendance")}
+          value={average === null ? "—" : `${average}%`}
+          delta={attendanceDelta}
+          foot={
+            average === null
+              ? t("metricAvgAttendanceNone")
+              : t("metricAvgAttendanceHint")
+          }
+          tone={average === null ? "brand" : attendanceLevel(average)}
+          icon={<CalendarCheck strokeWidth={1.75} />}
+        />
+
+        <Metric
+          title={t("metricLowAttendance")}
+          value={lowCount}
+          foot={
+            lowCount === 0
+              ? t("metricLowAttendanceNone")
+              : t("metricLowAttendanceSome")
+          }
+          tone={lowCount === 0 ? "good" : "low"}
+          icon={<TrendingDown strokeWidth={1.75} />}
+        />
+
+        <Metric
+          title={t("metricAlerts")}
+          value={alerts.length}
+          delta={
+            alerts.length > 0
+              ? { tone: "warn", label: t("metricAlertsSome") }
+              : undefined
+          }
+          foot={alerts.length === 0 ? t("metricAlertsNone") : undefined}
+          tone={alerts.length === 0 ? "good" : "accent"}
+          icon={<Bell strokeWidth={1.75} />}
         />
       </section>
 
-      <div className="grid items-start gap-5 lg:grid-cols-2">
-        <Tarjeta>
-          <TituloTarjeta extra={plural(lista.length, "jugador", "jugadores")}>
-            Jugadores por categoría
-          </TituloTarjeta>
-          <ListaBarras
-            datos={porCategoria}
-            vacio="Todavía no hay jugadores inscritos."
-          />
-        </Tarjeta>
+      <ContextBanner alerts={alerts} />
 
-        <Tarjeta>
-          <TituloTarjeta
-            extra={filas.length > 0 ? "De menor a mayor" : undefined}
-          >
-            Asistencia por jugador
-          </TituloTarjeta>
-          {filas.length === 0 ? (
-            <p className="py-6 text-center text-sm text-tenue">
-              Aún no se ha pasado asistencia en ninguna sesión.
-            </p>
-          ) : (
-            <ul className="divide-y divide-borde">
-              {[...filas]
-                .sort((a, b) => (a.porcentaje ?? 0) - (b.porcentaje ?? 0))
-                .slice(0, 6)
-                .map((f) => (
+      <div className="grid items-start gap-6 lg:grid-cols-3">
+        <div className="space-y-6 lg:col-span-2">
+          <Card>
+            <CardTitle extra={t("playerCount", { count: playerList.length })}>
+              {t("byCategoryTitle")}
+            </CardTitle>
+            <BarList
+              data={byCategory}
+              empty={
+                <EmptyState
+                  icon={<Users strokeWidth={1.5} />}
+                  title={t("byCategoryEmpty")}
+                />
+              }
+            />
+          </Card>
+
+          <Card>
+            <CardTitle
+              extra={
+                rankingRows.length > 0
+                  ? t("attendanceByPlayerOrder")
+                  : undefined
+              }
+            >
+              {t("attendanceByPlayerTitle")}
+            </CardTitle>
+            {rankingRows.length === 0 ? (
+              <EmptyState
+                icon={<CalendarCheck strokeWidth={1.5} />}
+                title={t("attendanceByPlayerEmpty")}
+              />
+            ) : (
+              <ul className="-mx-2 -my-1">
+                {[...rankingRows]
+                  .sort((a, b) => (a.porcentaje ?? 0) - (b.porcentaje ?? 0))
+                  .slice(0, 6)
+                  .map((r) => (
+                    <li
+                      key={r.jugador_id}
+                      className="flex items-center justify-between gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-surface-2"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">
+                          {r.nombre_completo}
+                        </p>
+                        <p className="mt-0.5 text-xs text-muted">
+                          {r.categoria} ·{" "}
+                          {t("calledUp", {
+                            count: r.sesiones_convocadas ?? 0,
+                          })}
+                        </p>
+                      </div>
+                      <AttendanceBadge
+                        level={attendanceLevel(r.porcentaje ?? 0)}
+                        percent={Math.round(r.porcentaje ?? 0)}
+                      />
+                    </li>
+                  ))}
+              </ul>
+            )}
+          </Card>
+
+          <Modules />
+        </div>
+
+        <div className="space-y-6">
+          <Card>
+            <CardTitle>{t("academyTitle")}</CardTitle>
+            <dl className="divide-y divide-line text-sm">
+              <Detail
+                term={t("academyRowAcademy")}
+                value={academy?.nombre ?? "—"}
+              />
+              <Detail
+                term={t("academyRowSeason")}
+                value={season?.nombre ?? t("academyRowNoSeason")}
+              />
+              <Detail
+                term={t("academyRowPeriod")}
+                value={dateRange(
+                  locale,
+                  season?.fecha_inicio,
+                  season?.fecha_fin,
+                )}
+              />
+              <Detail
+                term={t("academyRowRole")}
+                value={
+                  profile?.rol
+                    ? tRoles.has(profile.rol)
+                      ? tRoles(profile.rol)
+                      : profile.rol
+                    : "—"
+                }
+              />
+            </dl>
+          </Card>
+
+          <Card className="scroll-mt-24" id="alerts">
+            <CardTitle extra={alerts.length > 0 ? `${alerts.length}` : undefined}>
+              {t("alertsTitle")}
+            </CardTitle>
+            {alerts.length === 0 ? (
+              <EmptyState
+                icon={<CheckCheck strokeWidth={1.5} />}
+                title={t("alertsEmpty")}
+              />
+            ) : (
+              <ul className="-mx-2 space-y-0.5">
+                {alerts.map((a) => (
                   <li
-                    key={f.jugador_id}
-                    className="flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0"
+                    key={a.key}
+                    className="flex items-start gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-surface-2"
                   >
+                    <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-accent text-accent-fg">
+                      <TriangleAlert className="size-3" strokeWidth={2.25} />
+                    </span>
                     <div className="min-w-0">
-                      <p className="truncate text-sm">{f.nombre_completo}</p>
-                      <p className="text-xs text-tenue">
-                        {f.categoria} · {f.sesiones_convocadas} convocadas
-                      </p>
+                      <p className="text-sm">{a.title}</p>
+                      <p className="mt-0.5 text-xs text-muted">{a.detail}</p>
                     </div>
-                    <EstadoAsistencia
-                      nivel={nivelDeAsistencia(f.porcentaje ?? 0)}
-                      porcentaje={Math.round(f.porcentaje ?? 0)}
-                    />
                   </li>
                 ))}
-            </ul>
-          )}
-        </Tarjeta>
+              </ul>
+            )}
+          </Card>
+        </div>
       </div>
-
-      <Tarjeta>
-        <TituloTarjeta extra={alertas.length > 0 ? `${alertas.length}` : undefined}>
-          Alertas
-        </TituloTarjeta>
-        {alertas.length === 0 ? (
-          <p className="py-6 text-center text-sm text-tenue">
-            Nada pendiente. Todos los jugadores activos están inscritos y en su
-            categoría.
-          </p>
-        ) : (
-          <ul className="divide-y divide-borde">
-            {alertas.map((a) => (
-              <li
-                key={a.clave}
-                className="flex items-start gap-3 py-2.5 first:pt-0 last:pb-0"
-              >
-                <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-alerta-fondo">
-                  <svg
-                    aria-hidden
-                    viewBox="0 0 20 20"
-                    className="size-3 fill-none stroke-alerta stroke-[2]"
-                    strokeLinecap="round"
-                  >
-                    <path d="M10 5.5v5M10 13.6v.1" />
-                  </svg>
-                </span>
-                <div className="min-w-0">
-                  <p className="text-sm">{a.titulo}</p>
-                  <p className="text-xs text-tenue">{a.detalle}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Tarjeta>
     </div>
   );
 }
 
 /* ---------------------------------------------------------------------------
-   Cálculos. Se hacen aquí y no en la base: son agregaciones sobre pocos
-   cientos de filas que ya vinieron filtradas por RLS.
+   Local pieces
    --------------------------------------------------------------------------- */
 
-function plural(n: number, singular: string, plural: string) {
-  return `${n} ${n === 1 ? singular : plural}`;
+function Detail({ term, value }: { term: string; value: string }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3 py-2.5 first:pt-0 last:pb-0">
+      <dt className="shrink-0 text-muted">{term}</dt>
+      <dd className="min-w-0 truncate text-right font-medium">{value}</dd>
+    </div>
+  );
 }
 
-type Jugador = {
+/**
+ * Context strip: sums up what to look at today and links to it. Subtle brand
+ * surface, not glass: it is fixed content within the flow.
+ */
+async function ContextBanner({ alerts }: { alerts: Alert[] }) {
+  const t = await getTranslations("dashboard");
+  const hasAlerts = alerts.length > 0;
+
+  return (
+    <section className="glass-panel flex flex-col gap-3.5 rounded-2xl p-4 sm:flex-row sm:items-center sm:gap-4">
+      <span
+        aria-hidden
+        className={cn(
+          "flex size-10 shrink-0 items-center justify-center rounded-xl shadow-sm",
+          hasAlerts ? "bg-accent text-accent-fg" : "bg-brand text-brand-fg",
+        )}
+      >
+        {hasAlerts ? (
+          <TriangleAlert className="size-[1.15rem]" strokeWidth={1.9} />
+        ) : (
+          <Sparkles className="size-[1.15rem]" strokeWidth={1.9} />
+        )}
+      </span>
+
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-semibold">
+          {hasAlerts ? t("contextNeedAttention") : t("contextAllClear")}
+        </p>
+        <p className="mt-0.5 text-sm text-muted">
+          {hasAlerts
+            ? `${alerts[0].title}${
+                alerts.length > 1
+                  ? t("contextAndMore", { count: alerts.length - 1 })
+                  : ""
+              }`
+            : t("contextAllClearBody")}
+        </p>
+      </div>
+
+      {hasAlerts && (
+        <Link
+          href="#alerts"
+          className="group inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-brand px-3.5 text-sm font-medium text-brand-fg shadow-sm transition-colors hover:bg-brand-hover"
+        >
+          {t("contextViewAlerts")}
+          <ArrowRight
+            aria-hidden
+            strokeWidth={2}
+            className="size-4 transition-transform duration-200 ease-out-soft group-hover:translate-x-0.5"
+          />
+        </Link>
+      )}
+    </section>
+  );
+}
+
+/* ---------------------------------------------------------------------------
+   Computations. Done here and not in the database: they are aggregations over
+   a few hundred rows that already came filtered by RLS.
+   --------------------------------------------------------------------------- */
+
+/** The translator returned by `getTranslations("dashboard")`. */
+type DashboardT = Awaited<ReturnType<typeof getTranslations>>;
+
+function greetingKeyForHour() {
+  const hour = Number(
+    new Intl.DateTimeFormat("en", {
+      hour: "numeric",
+      hour12: false,
+      timeZone: "America/Guatemala",
+    }).format(new Date()),
+  );
+  if (hour < 12) return "greetingMorning" as const;
+  if (hour < 19) return "greetingAfternoon" as const;
+  return "greetingEvening" as const;
+}
+
+function buildSubtitle(
+  t: DashboardT,
+  {
+    alerts,
+    players,
+    average,
+  }: { alerts: number; players: number; average: number | null },
+) {
+  if (alerts > 0) return t("subtitleAlerts", { count: alerts });
+  if (players === 0) return t("subtitleEmpty");
+  const attendance =
+    average === null
+      ? t("subtitleOkNoSessions")
+      : t("subtitleOkAttendance", { value: average });
+  return t("subtitleOk", { players, attendance });
+}
+
+function dateRange(
+  locale: string,
+  start?: string | null,
+  end?: string | null,
+) {
+  if (!start || !end) return "—";
+  const fmt = new Intl.DateTimeFormat(locale, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+  return `${fmt.format(new Date(start))} – ${fmt.format(new Date(end))}`;
+}
+
+type Player = {
   id: string | null;
   codigo: string | null;
   nombre_completo: string | null;
@@ -168,61 +452,85 @@ type Jugador = {
   categoria_por_edad: string | null;
   fuera_de_categoria: boolean | null;
   sin_inscribir: boolean | null;
+  sin_equipo: boolean | null;
 };
 
-type Fila = {
+type RankingRow = {
   jugador_id: string | null;
   nombre_completo: string | null;
   porcentaje: number | null;
 };
 
-function agrupar(jugadores: Jugador[]) {
-  const cuenta = new Map<string, number>();
-  for (const j of jugadores) {
-    const clave = j.categoria ?? j.categoria_por_edad ?? "Sin categoría";
-    cuenta.set(clave, (cuenta.get(clave) ?? 0) + 1);
+type Alert = { key: string; title: string; detail: string };
+
+function groupByCategory(players: Player[]) {
+  const count = new Map<string, number>();
+  for (const p of players) {
+    const key = p.categoria ?? p.categoria_por_edad ?? "—";
+    count.set(key, (count.get(key) ?? 0) + 1);
   }
-  return [...cuenta.entries()]
-    .map(([etiqueta, valor]) => ({ etiqueta, valor }))
-    .sort((a, b) => b.valor - a.valor);
+  return [...count.entries()]
+    .map(([label, value]) => ({ label, value }))
+    .sort((a, b) => b.value - a.value);
 }
 
-function promedioAsistencia(filas: Fila[]) {
-  const validos = filas
-    .map((f) => f.porcentaje)
+function averageAttendance(rows: RankingRow[]) {
+  const valid = rows
+    .map((r) => r.porcentaje)
     .filter((p): p is number => p !== null);
-  if (validos.length === 0) return null;
-  return Math.round(validos.reduce((a, b) => a + b, 0) / validos.length);
+  if (valid.length === 0) return null;
+  return Math.round(valid.reduce((a, b) => a + b, 0) / valid.length);
 }
 
-function construirAlertas(jugadores: Jugador[], filas: Fila[]) {
-  const alertas: { clave: string; titulo: string; detalle: string }[] = [];
+function buildAlerts(
+  players: Player[],
+  rows: RankingRow[],
+  t: DashboardT,
+): Alert[] {
+  const alerts: Alert[] = [];
 
-  for (const j of jugadores) {
-    if (j.sin_inscribir) {
-      alertas.push({
-        clave: `sin-${j.id}`,
-        titulo: `${j.nombre_completo} no está inscrito en la temporada`,
-        detalle: `${j.codigo} · le corresponde ${j.categoria_por_edad ?? "sin categoría"}`,
+  for (const p of players) {
+    if (p.sin_inscribir) {
+      alerts.push({
+        key: `unregistered-${p.id}`,
+        title: t("alertNotRegistered", { name: p.nombre_completo ?? "—" }),
+        detail: t("alertNotRegisteredDetail", {
+          code: p.codigo ?? "—",
+          category: p.categoria_por_edad ?? t("noCategory"),
+        }),
       });
-    } else if (j.fuera_de_categoria) {
-      alertas.push({
-        clave: `fuera-${j.id}`,
-        titulo: `${j.nombre_completo} juega fuera de su categoría`,
-        detalle: `Inscrito en ${j.categoria}, le corresponde ${j.categoria_por_edad}`,
+    } else if (p.sin_equipo) {
+      alerts.push({
+        key: `no-team-${p.id}`,
+        title: t("alertNoTeam", { name: p.nombre_completo ?? "—" }),
+        detail: t("alertNoTeamDetail", {
+          code: p.codigo ?? "—",
+          category: p.categoria ?? p.categoria_por_edad ?? t("noCategory"),
+        }),
+      });
+    } else if (p.fuera_de_categoria) {
+      alerts.push({
+        key: `off-category-${p.id}`,
+        title: t("alertOutOfCategory", { name: p.nombre_completo ?? "—" }),
+        detail: t("alertOutOfCategoryDetail", {
+          current: p.categoria ?? "—",
+          expected: p.categoria_por_edad ?? t("noCategory"),
+        }),
       });
     }
   }
 
-  for (const f of filas) {
-    if (f.porcentaje !== null && f.porcentaje < 70) {
-      alertas.push({
-        clave: `asist-${f.jugador_id}`,
-        titulo: `${f.nombre_completo} tiene asistencia baja`,
-        detalle: `${Math.round(f.porcentaje)}% de las sesiones convocadas`,
+  for (const r of rows) {
+    if (r.porcentaje !== null && r.porcentaje < 70) {
+      alerts.push({
+        key: `attendance-${r.jugador_id}`,
+        title: t("alertLowAttendance", { name: r.nombre_completo ?? "—" }),
+        detail: t("alertLowAttendanceDetail", {
+          percent: Math.round(r.porcentaje),
+        }),
       });
     }
   }
 
-  return alertas;
+  return alerts;
 }

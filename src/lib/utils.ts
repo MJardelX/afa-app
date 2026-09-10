@@ -1,4 +1,4 @@
-/** Une clases condicionales sin dependencias externas. */
-export function cn(...clases: Array<string | false | null | undefined>): string {
-  return clases.filter(Boolean).join(" ");
+/** Joins conditional class names without any external dependency. */
+export function cn(...classes: Array<string | false | null | undefined>): string {
+  return classes.filter(Boolean).join(" ");
 }

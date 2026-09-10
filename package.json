@@ -11,15 +11,18 @@
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
     "db:types": "supabase gen types typescript --local > src/types/database.ts",
-    "db:usuarios": "node scripts/crear-usuarios.mjs",
+    "db:users": "node --env-file-if-exists=.env.local scripts/create-users.mjs",
     "db:studio": "supabase status -o env"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.112.1",
+    "lucide-react": "^1.39.0",
     "next": "16.3.0",
+    "next-intl": "^4.14.2",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "zod": "^4.5.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

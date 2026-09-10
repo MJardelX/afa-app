@@ -2,42 +2,45 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
-import { crearClienteServidor } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 
-export async function iniciarSesion(_prev: unknown, formData: FormData) {
+export async function signIn(_prev: unknown, formData: FormData) {
+  const t = await getTranslations("login");
+
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
 
   if (!email || !password) {
-    return { error: "Ingresá tu correo y tu contraseña." };
+    return { error: t("errorMissingFields") };
   }
 
-  const supabase = await crearClienteServidor();
+  const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
-    // Al usuario se le da un mensaje genérico a propósito: distinguir
-    // "correo inexistente" de "contraseña incorrecta" permitiría averiguar
-    // qué correos están registrados.
+    // The user is given a deliberately generic message: telling "unknown
+    // email" apart from "wrong password" would let someone probe which emails
+    // are registered.
     //
-    // Pero el error real se registra en el servidor. Sin esto, un fallo de
-    // configuración (URL mala, stack caído, llave vencida) se ve idéntico a
-    // una contraseña equivocada, y se diagnostica a ciegas.
-    console.error("[login] fallo de autenticación:", {
-      código: error.code,
-      estado: error.status,
-      mensaje: error.message,
+    // The real error is logged on the server, though. Without this, a config
+    // failure (bad URL, stack down, expired key) looks identical to a wrong
+    // password and gets diagnosed blind.
+    console.error("[login] authentication failure:", {
+      code: error.code,
+      status: error.status,
+      message: error.message,
     });
 
-    const esCredencial =
+    const isCredentialError =
       error.code === "invalid_credentials" ||
       error.code === "email_not_confirmed";
 
     return {
-      error: esCredencial
-        ? "Correo o contraseña incorrectos."
-        : "No se pudo conectar con el servidor. Avisá a la dirección.",
+      error: isCredentialError
+        ? t("errorBadCredentials")
+        : t("errorConnection"),
     };
   }
 
@@ -45,8 +48,8 @@ export async function iniciarSesion(_prev: unknown, formData: FormData) {
   redirect("/");
 }
 
-export async function cerrarSesion() {
-  const supabase = await crearClienteServidor();
+export async function signOut() {
+  const supabase = await createClient();
   await supabase.auth.signOut();
   revalidatePath("/", "layout");
   redirect("/login");

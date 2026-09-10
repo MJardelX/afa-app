@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getTranslations } from "next-intl/server";
+
 import "./globals.css";
 
 const geistSans = Geist({
@@ -12,27 +15,33 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "AFA Manager",
-  description: "Sistema de gestión de la Academia de Fútbol Amistad",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("app");
+  return {
+    title: t("name"),
+    description: t("tagline"),
+  };
+}
 
-// Se ejecuta antes de pintar: sin esto, quien eligió tema oscuro ve un
-// destello blanco en cada carga. Debe quedarse inline y ser síncrono.
-const scriptTema = `try{var t=localStorage.getItem("afa-tema");if(t==="dark"||t==="light")document.documentElement.dataset.theme=t}catch(e){}`;
+// Runs before paint: without this, someone who chose the dark theme sees a
+// white flash on every load, and the sidebar snaps shut after hydration. Must
+// stay inline and synchronous.
+const bootScript = `try{var d=document.documentElement;var t=localStorage.getItem("afa-theme");if(t==="dark"||t==="light")d.dataset.theme=t;d.dataset.sidebar=localStorage.getItem("afa-sidebar")==="closed"?"closed":"open"}catch(e){}`;
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const locale = await getLocale();
+
   return (
     <html
-      lang="es"
+      lang={locale}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: scriptTema }} />
+        <script dangerouslySetInnerHTML={{ __html: bootScript }} />
       </head>
-      <body className="flex min-h-full flex-col bg-fondo text-texto">
-        {children}
+      <body className="flex min-h-full flex-col bg-canvas text-fg">
+        <NextIntlClientProvider>{children}</NextIntlClientProvider>
       </body>
     </html>
   );

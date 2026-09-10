@@ -1,294 +1,330 @@
 # AFA MANAGER
 
-Sistema de gestión deportiva de la **Academia de Fútbol Amistad**.
-Next.js (App Router) para frontend y backend, Supabase para base de datos, auth y archivos.
+Sports management system for the **Amistad Football Academy** (Academia de
+Fútbol Amistad). Next.js (App Router) for frontend and backend, Supabase for
+database, auth and files.
 
 ## Stack
 
-| Pieza      | Versión | Nota                              |
-| ---------- | ------- | --------------------------------- |
-| Next.js    | 16.3.0  | App Router + Turbopack            |
-| React      | 19.2.8  | Server Components por defecto     |
-| TypeScript | 5.x     | `strict` activado                 |
-| Tailwind   | 4.x     | vía `@tailwindcss/postcss`        |
-| Supabase   | Postgres 17 | RLS, Auth y Storage           |
+| Piece      | Version     | Note                           |
+| ---------- | ----------- | ------------------------------ |
+| Next.js    | 16.3.0      | App Router + Turbopack         |
+| React      | 19.2.8      | Server Components by default   |
+| TypeScript | 5.x         | `strict` on                    |
+| Tailwind   | 4.x         | via `@tailwindcss/postcss`     |
+| next-intl  | 4.x         | UI in English, Spanish available |
+| lucide-react | 1.x       | Icon set (tree-shaken per import) |
+| Supabase   | Postgres 17 | RLS, Auth and Storage          |
 
-## Arranque
+## Getting started
 
 ```bash
 npm install
 cp .env.example .env.local
 
-npm run db:start    # levanta Postgres + Auth + Storage en Docker
+npm run db:start    # brings up Postgres + Auth + Storage in Docker
 npm run dev         # http://localhost:3000
 ```
 
-`npm run db:start` imprime las llaves locales; van en `.env.local`.
-Studio queda en http://127.0.0.1:54423 (los puertos son propios de este
-proyecto para no chocar con otros Supabase locales).
+`npm run db:start` prints the local keys; they go in `.env.local`.
+Studio is at http://127.0.0.1:54423 (the ports are specific to this project so
+they don't clash with other local Supabase stacks).
 
-| Script            | Qué hace                                             |
+| Script            | What it does                                          |
 | ----------------- | ---------------------------------------------------- |
-| `npm run dev`     | Servidor de desarrollo en el puerto 3000             |
-| `npm run db:reset`| Reaplica todas las migraciones + `seed.sql`          |
-| `npm run db:types`| Regenera `src/types/database.ts` desde el esquema     |
+| `npm run dev`     | Dev server on port 3000                              |
+| `npm run db:reset`| Re-applies every migration + `seed.sql`              |
+| `npm run db:users`| Creates/resets the local test users (Admin API)     |
+| `npm run db:types`| Regenerates `src/types/database.ts` from the schema |
 | `npm run lint`    | ESLint                                               |
 
-> Después de tocar una migración: `npm run db:reset && npm run db:types`.
+> After touching a migration: `npm run db:reset && npm run db:types`.
 
 ---
 
-# Sistema de diseño
+# Internationalization
 
-Todo vive en [globals.css](src/app/globals.css). Los componentes **no usan
-colores crudos**: usan tokens semánticos. Cambiar la marca es editar un archivo.
+The UI is in **English by default**, with a full **Spanish** translation. There
+are no locale-prefixed URLs: the language is a user preference, not a routing
+concern.
 
-## Dos capas
+- `src/i18n/config.ts` — supported locales and the cookie name.
+- `src/i18n/request.ts` — per-request locale resolution (from the `afa-locale`
+  cookie, falling back to English).
+- `src/i18n/actions.ts` — `setLocale()` server action that persists the choice.
+- `messages/en.json`, `messages/es.json` — the message catalogs.
 
-**Primitivas** — la paleta: `celeste-50…950`, `amarillo-100…700`. No se usan
-directo en componentes.
+Server Components and Server Actions read strings with `getTranslations()`;
+Client Components use `useTranslations()`. The language switcher is
+[language-toggle.tsx](src/components/ui/language-toggle.tsx), shown next to the
+theme switcher.
 
-**Semánticas** — qué significa cada color. Es lo que se escribe al construir:
+Database identifiers (table and column names, enum values) stay in Spanish:
+they are the data layer's contract, mirrored verbatim by the generated
+`src/types/database.ts`.
 
-| Token | Para qué |
+---
+
+# Design system
+
+Everything lives in [globals.css](src/app/globals.css). Components **do not use
+raw colors**: they use semantic tokens. Rebranding is editing one file.
+
+## Two layers
+
+**Primitives** — the palette: `sky-50…950`, `yellow-100…700`. Never used
+directly in components.
+
+**Semantic** — what each color means. This is what you write with:
+
+| Token | For |
 | --- | --- |
-| `fondo` · `superficie` · `superficie-2` | Página, tarjetas, zonas sutiles |
-| `texto` · `tenue` · `suave` | Jerarquía tipográfica |
-| `borde` · `borde-fuerte` | Líneas |
-| `marca` · `marca-hover` · `marca-texto` | Acción principal |
-| `marca-sutil` · `marca-legible` | Fondo suave / texto de marca |
-| `acento` · `acento-texto` | Amarillo como superficie |
-| `exito` · `alerta` · `peligro` (+ `-fondo`) | Estados |
-| `semaforo-verde/amarillo/rojo` | Asistencia: ≥85 · ≥70 · <70 |
+| `canvas` · `surface` · `surface-2` | Page, cards, subtle zones |
+| `fg` · `muted` · `faint` | Type hierarchy |
+| `line` · `line-strong` | Lines |
+| `brand` · `brand-hover` · `brand-fg` | Primary action |
+| `brand-subtle` · `brand-legible` | Soft brand background / brand text |
+| `accent` · `accent-fg` · `accent-subtle` | Yellow as a surface |
+| `success` · `warning` · `danger` (+ `-bg`) | States |
+| `status-good` / `status-fair` / `status-low` (+ `-bg` / `-fg`) | Attendance: ≥85 · ≥70 · <70 |
+| `chart-bar` · `chart-track` | Charts |
+| `banner-from` · `banner-via` · `banner-to` · `banner-fg` | The dashboard brand banner |
 
-Se usan como utilidades normales: `bg-superficie`, `text-tenue`,
-`border-borde`, `bg-marca text-marca-texto`.
+They are used as normal utilities: `bg-surface`, `text-muted`,
+`border-line`, `bg-brand text-brand-fg`.
 
-## Temas: cada token se define una sola vez
+**Elevation** is tokenized too, theme-aware: `shadow-card` (resting),
+`shadow-card-hover` (lift on interactive cards), `shadow-pop` (the banner).
+Radii top out at `rounded-3xl`; `ease-out-soft` is the shared easing for
+hover motion. `--canvas` is a hair off-white so white `surface` cards separate
+cleanly without heavy borders.
+
+## Themes: every token is defined once
 
 ```css
---fondo: light-dark(#ffffff, #0a2333);
+--canvas: light-dark(#ffffff, #0a2333);
 ```
 
-`light-dark()` lleva los dos valores juntos, así que no hay bloques claro/oscuro
-duplicados que se desincronicen. Quién decide lo resuelve `color-scheme`:
+`light-dark()` carries both values together, so there are no duplicated
+light/dark blocks that drift apart. `color-scheme` decides which one applies:
 
-- Sin `data-theme` → sigue al sistema operativo.
-- `data-theme="light"` o `"dark"` en `<html>` → gana la elección del usuario.
+- No `data-theme` → follows the operating system.
+- `data-theme="light"` or `"dark"` on `<html>` → the user's choice wins.
 
-El control está en [tema-toggle.tsx](src/components/ui/tema-toggle.tsx) (claro /
-sistema / oscuro, persistido en `localStorage`). Un script inline en
-[layout.tsx](src/app/layout.tsx) lo aplica **antes de pintar**: sin eso, quien
-elige oscuro ve un destello blanco en cada carga.
+The control is [theme-toggle.tsx](src/components/ui/theme-toggle.tsx) (light /
+system / dark, persisted in `localStorage` under `afa-theme`). An inline script
+in [layout.tsx](src/app/layout.tsx) applies it **before paint**: without it,
+someone who chose dark sees a white flash on every load.
 
-`dark:` está redefinido con `@custom-variant` para atender también a
-`data-theme`. El de Tailwind solo mira `prefers-color-scheme` e ignoraría la
-elección manual.
+`dark:` is redefined with `@custom-variant` so it also honors `data-theme`.
+Tailwind's own only looks at `prefers-color-scheme` and would ignore the manual
+choice.
 
-## Reglas de contraste, medidas y no supuestas
+## Contrast rules, measured and not assumed
 
-- **`--marca` es celeste-700** (6.11:1 con blanco) y no se aclara en modo
-  oscuro: celeste-600 baja a 4.27:1 y no pasa AA.
-- **Celeste-600 o más claro nunca lleva texto blanco.**
-- **Amarillo nunca es texto sobre blanco**, solo superficie de acento con
-  `acento-texto` (celeste-900) encima.
-- **Nada de blanco translúcido para texto.** `text-white/90` sobre celeste cae a
-  3.26:1; el blanco sólido da 6.11:1.
+- **`--brand` is sky-700** (6.11:1 on white) and is not lightened in dark mode:
+  sky-600 drops to 4.27:1 and fails AA.
+- **Sky-600 or lighter never carries white text.**
+- **Yellow is never text on white**, only an accent surface with `accent-fg`
+  (sky-900) on top.
+- **No translucent white for text.** `text-white/90` over sky falls to 3.26:1;
+  solid white is 6.11:1.
 
-Los 10 textos del login están medidos con WCAG sobre el render real, en claro y
-en oscuro. Todos pasan AA.
+The 10 login texts are measured with WCAG against the real render, light and
+dark. They all pass AA.
 
-## Semáforo de asistencia: no es verde/amarillo/rojo
+## Attendance scale: not green/yellow/red
 
-`buena ≥85 · regular ≥70 · baja <70`, pero con **teal / ámbar / carmín**.
+`good ≥85 · fair ≥70 · low <70`, but with **teal / amber / crimson**.
 
-La tríada clásica está descartada por medición: verde y amarillo quedan a
-**ΔE 3.6 en protanopia** — un entrenador con daltonismo rojo-verde no distingue
-"buena" de "regular", que es justo la lectura principal del sistema. Teal/ámbar/
-carmín da **ΔE 21.1** en la misma prueba.
+The classic triad is ruled out by measurement: green and yellow land at
+**dE 3.6 in protanopia** — a coach with red-green colorblindness can't tell
+"good" from "fair", which is the system's main read. Teal/amber/crimson gives
+**dE 21.1** on the same test.
 
-Aun así el color **nunca comunica solo**:
-[estado-asistencia.tsx](src/components/ui/estado-asistencia.tsx) siempre pinta
-ícono propio + etiqueta escrita + porcentaje.
+Even so the color **never communicates alone**:
+[attendance-badge.tsx](src/components/ui/attendance-badge.tsx) always renders its
+own icon + a written label + the percentage.
 
-La vista `v_ranking_equipo` devuelve `nivel_asistencia` (`buena`/`regular`/
-`baja`), no un nombre de color: si la base dijera "verde", tarde o temprano
-alguien pintaría un verde.
+The `v_ranking_equipo` view returns `nivel_asistencia` (`buena`/`regular`/
+`baja`), not a color name: if the database said "green", sooner or later someone
+would paint a green.
 
-## Gráficas
+## Charts
 
-Una serie = un color. Las barras de "jugadores por categoría" son todas
-`--grafico-barra`: pintar cada categoría distinto sugeriría que el color
-significa algo, y la longitud ya lleva toda la información. Cada barra lleva su
-valor escrito, así que se lee sin depender del color ni del mouse.
+One series = one color. The "players by category" bars are all `chart-bar`:
+painting each category differently would suggest the color means something, and
+the length already carries all the information. Each bar has its value written,
+so it reads without relying on the color or the mouse.
 
-## Vidrio (liquid glass)
+## Glass (liquid glass)
 
-Clases `.vidrio` y `.campo-vidrio`. Se usan **con moderación** — la tarjeta de
-sesión y sus campos — porque el efecto solo se percibe si hay color difuminado
-detrás. Por eso existen los halos (`.halos`, `.halo-a/b/c`): son lo que el
-desenfoque refracta. Sobre blanco plano el vidrio no se ve y solo cuesta
-rendimiento.
+Classes `.glass` and `.field-glass`. Used **sparingly** — the session card and
+its fields — because the effect is only perceptible with diffuse color behind
+it. That is why the halos exist (`.halos`, `.halo-a/b/c`): they are what the
+blur refracts. Over flat white the glass is invisible and only costs
+performance.
 
-Tres salvaguardas: sin soporte de `backdrop-filter` el fondo queda sólido;
-con `prefers-reduced-transparency` se desactiva el desenfoque; y el contraste se
-mide sobre el resultado.
+Three safeguards: without `backdrop-filter` support the background stays solid;
+with `prefers-reduced-transparency` the blur is disabled; and contrast is
+measured on the result.
 
 ---
 
-# Modelo de datos
+# Data model
 
-## La decisión central: la categoría no se guarda, se calcula
+## The central decision: the category is not stored, it is computed
 
-Un jugador Sub-10 este año es Sub-11 el siguiente. Si la categoría fuera una
-columna en `jugadores`, cada 1 de enero quedaría mal en todos los registros a la
-vez, y el histórico del año anterior se destruiría al corregirla.
+A Sub-10 player this year is Sub-11 the next. If the category were a column in
+`jugadores`, every January 1st it would be wrong across every record at once,
+and the previous year's history would be destroyed when correcting it.
 
-En su lugar hay **tres niveles**:
+Instead there are **three levels**:
 
 ```
-CATEGORÍA        Sub-10                       catálogo permanente, define el rango de edad
+CATEGORY         Sub-10                       permanent catalog, defines the age range
    ↓
-EQUIPO           Sub-10 "A" — Ciclo 2026      categoría + temporada + entrenador
+TEAM             Sub-10 "A" — Ciclo 2026      category + season + coach
    ↓
-INSCRIPCIÓN      Juan Pérez → Sub-10 "A"      jugador + temporada + equipo
-                 Ciclo 2026, #7, delantero
+REGISTRATION     Juan Pérez → Sub-10 "A"      player + season + team
+                 Ciclo 2026, #7, forward
 ```
 
-La categoría se lee bajando la cadena: `inscripcion → equipo → categoria`.
+The category is read by walking down the chain:
+`inscripcion → equipo → categoria`.
 
-## Dos edades distintas
+## Two different ages
 
-- **Edad real** — la del cumpleaños. Para la ficha, el carné y los cumpleaños.
-- **Edad deportiva** — los años que cumple *durante* el año de temporada. Define
-  la categoría, siguiendo la convención del fútbol formativo (por año de
-  nacimiento, no por cumpleaños).
+- **Real age** — from the birthday. For the profile, the ID card and birthdays.
+- **Sporting age** — the years reached *during* the season year. Defines the
+  category, following youth-football convention (by birth year, not by
+  birthday).
 
 ```
-edad_deportiva = año_de_temporada − año_de_nacimiento
+sporting_age = season_year − birth_year
 ```
 
-Un niño nacido el 20/11/2016 tiene 9 años reales en agosto de 2026, pero su edad
-deportiva en el Ciclo 2026 es 10 → juega Sub-10.
+A child born on 2016-11-20 is 9 years old in August 2026, but their sporting age
+in Ciclo 2026 is 10 → they play Sub-10.
 
-## Consultar la categoría
+## Querying the category
 
-La vista `v_jugadores` la entrega como si fuera una columna guardada:
+The `v_jugadores` view delivers it as if it were a stored column:
 
 ```ts
 const { data } = await supabase.from("v_jugadores").select("*");
 
-data[0].categoria           // 'Sub-10'  — donde realmente juega
-data[0].categoria_por_edad  // 'Sub-10'  — la que le corresponde
+data[0].categoria           // 'Sub-10'  — where they actually play
+data[0].categoria_por_edad  // 'Sub-10'  — where they belong
 data[0].edad_real           // 9
 data[0].edad_deportiva      // 10
-data[0].fuera_de_categoria  // false     — bandera automática de excepción
+data[0].fuera_de_categoria  // false     — automatic exception flag
 ```
 
-Cuando un jugador se adelanta o se atrasa de categoría, ambas columnas difieren y
-`fuera_de_categoria` se enciende sola. `inscripciones.motivo_excepcion` guarda el
-porqué.
+When a player is moved up or down a category, both columns differ and
+`fuera_de_categoria` turns on by itself. `inscripciones.motivo_excepcion` stores
+the why.
 
-## Tablas
+## Tables
 
 ```
-NÚCLEO
-  academias              multi-tenant desde el día uno; toda tabla lleva academia_id
-  perfiles               usuarios enlazados a auth.users, con rol
-  temporadas             ciclo lectivo; solo una activa por academia
+CORE
+  academias              multi-tenant from day one; every table carries academia_id
+  perfiles               users linked to auth.users, with a role
+  temporadas             school cycle; only one active per academy
 
-ESTRUCTURA DEPORTIVA
-  categorias             Sub-6 … Sub-18, con rango de edad deportiva
-  equipos                una categoría en una temporada, con entrenador
+SPORTING STRUCTURE
+  categorias             Sub-6 … Sub-18, with a sporting-age range
+  equipos                one category in one season, with a coach
 
-PERSONAS
-  jugadores              datos permanentes; la edad NUNCA se almacena
-  fichas_medicas         1:1, tabla aparte porque RLS la restringe
-  tutores                tabla propia: resuelve hermanos y datos compartidos
-  jugador_tutor          N:N con parentesco y contacto principal
-  inscripciones          jugador + temporada + equipo  ← tabla bisagra
+PEOPLE
+  jugadores              permanent data; age is NEVER stored
+  fichas_medicas         1:1, a separate table because RLS restricts it
+  tutores                own table: handles siblings and shared data
+  jugador_tutor          N:N with relationship and primary contact
+  inscripciones          player + season + team  ← hinge table
 
-OPERACIÓN
-  sesiones               entrenamientos y partidos, sin límite de cantidad
-  asistencias            una fila por jugador y sesión
+OPERATION
+  sesiones               trainings and matches, no cap on quantity
+  asistencias            one row per player and session
 
-EVALUACIÓN
-  periodos_evaluacion    sin período no hay línea de progreso
-  criterios_evaluacion   los criterios son filas configurables, no columnas
-  evaluaciones           quién evaluó, cuándo, en qué período
-  evaluacion_detalle     puntaje por criterio
+ASSESSMENT
+  periodos_evaluacion    without a period there is no progress line
+  criterios_evaluacion   criteria are configurable rows, not columns
+  evaluaciones           who assessed, when, in which period
+  evaluacion_detalle     score per criterion
 
-SOPORTE
-  documentos             partidas, DPI, fichas firmadas (Supabase Storage)
-  auditoria              bitácora de cambios; solo el director la consulta
-  correlativos           código AFA-2026-0001
+SUPPORT
+  documentos             birth certificates, IDs, signed forms (Supabase Storage)
+  auditoria              change log; only the director queries it
+  correlativos           code AFA-2026-0001
 ```
 
-## Vistas
+## Views
 
-| Vista                   | Para qué                                                     |
-| ----------------------- | ------------------------------------------------------------ |
-| `v_jugadores`           | Jugadores de la temporada activa con categoría y ambas edades |
-| `v_asistencia_jugador`  | Convocadas, presentes, porcentaje                            |
-| `v_ranking_equipo`      | Ranking, semáforo (verde ≥85, amarillo ≥70, rojo <70)        |
-| `v_evaluacion_dimension`| Promedio ponderado por dimensión                             |
+| View                    | For                                                          |
+| ----------------------- | ----------------------------------------------------------- |
+| `v_jugadores`           | Active-season players with category and both ages           |
+| `v_asistencia_jugador`  | Called up, present, percentage                              |
+| `v_ranking_equipo`      | Ranking, scale (green ≥85, yellow ≥70, red <70)             |
+| `v_evaluacion_dimension`| Weighted average per dimension                              |
 
-Todas con `security_invoker = on`: la RLS del usuario aplica también dentro de la
-vista.
+All with `security_invoker = on`: the user's RLS applies inside the view too.
 
-## Nada calculado se almacena
+## Nothing computed is stored
 
-Edad, porcentaje de asistencia, promedio y semáforo se derivan siempre. Guardar
-un cálculo es garantizar que algún día quede desactualizado.
+Age, attendance percentage, average and the scale are always derived. Storing a
+computation guarantees it goes stale one day.
 
-## Guardas en la base de datos
+## Database guards
 
-Errores que el sistema hace **imposibles**, no solo improbables:
+Errors the system makes **impossible**, not just unlikely:
 
-| Guarda | Qué impide |
+| Guard | What it prevents |
 | --- | --- |
-| FK compuesta `(equipo_id, temporada_id)` | Inscribir a un jugador en un equipo de otra temporada |
-| Índice parcial `temporada_activa_unica` | Dos temporadas activas a la vez |
-| `EXCLUDE` sobre rangos de edad | Dos categorías activas con edades traslapadas |
-| `inscripcion_principal_unica` | Dos equipos principales en la misma temporada |
-| `inscripcion_camiseta_unica` | Número de camiseta repetido en un equipo |
-| `fn_validar_asistencia()` | Asistencia de un jugador no inscrito, o anterior a su alta |
-| `fn_inscripcion_fecha_alta()` | Que el alta caiga "hoy" y se pierda el ciclo ya transcurrido |
+| Composite FK `(equipo_id, temporada_id)` | Registering a player in a team from another season |
+| Partial index `temporada_activa_unica` | Two active seasons at once |
+| `EXCLUDE` over age ranges | Two active categories with overlapping ages |
+| `inscripcion_principal_unica` | Two primary teams in the same season |
+| `inscripcion_camiseta_unica` | A repeated shirt number in a team |
+| `fn_validar_asistencia()` | Attendance for an unregistered player, or before their start date |
+| `fn_inscripcion_fecha_alta()` | The start date landing "today" and losing the cycle already elapsed |
 
-`fecha_alta` se deriva como `greatest(inicio_temporada, ingreso_a_la_academia)`.
-Por eso quien entra en octubre no arrastra un porcentaje bajo por las sesiones de
-marzo: su denominador solo cuenta las sesiones posteriores a su alta.
+`fecha_alta` is derived as `greatest(season_start, academy_join_date)`. That is
+why someone who joins in October does not drag a low percentage from the March
+sessions: their denominator only counts sessions after their start date.
 
-## Roles y permisos
+## Roles and permissions
 
-| Rol           | Alcance                                                            |
-| ------------- | ------------------------------------------------------------------ |
-| `director`    | Todo lo de su academia, incluida la bitácora de auditoría          |
-| `coordinador` | Igual, sin acceso a auditoría                                      |
-| `entrenador`  | Sus equipos: sesiones, asistencia y evaluaciones. **Sin ficha médica** |
-| `tutor`       | Solo sus hijos, y solo evaluaciones finalizadas (portal v2.0)      |
-| `anon`        | Nada. Una petición sin sesión recibe 401, no una lista vacía       |
+| Role          | Scope                                                             |
+| ------------- | ---------------------------------------------------------------- |
+| `director`    | Everything in their academy, including the audit log             |
+| `coordinador` | Same, without audit access                                       |
+| `entrenador`  | Their teams: sessions, attendance and assessments. **No medical record** |
+| `tutor`       | Only their children, and only finalized assessments (portal v2.0) |
+| `anon`        | Nothing. A request without a session gets 401, not an empty list |
 
-La ficha médica vive en tabla aparte precisamente para poder negársela al
-entrenador: son datos de salud de menores de edad.
+The medical record lives in a separate table precisely so it can be denied to
+the coach: it is health data of minors.
 
-## Renovación de temporada
+## Season rollover
 
-`preview_renovacion(temporada_destino)` simula el cambio de ciclo sin escribir
-nada: cada jugador sube de categoría solo, marca a los que egresan y señala a los
-que estaban fuera de categoría para que el director confirme.
+`preview_renovacion(target_season)` simulates the cycle change without writing
+anything: every player moves up a category by itself, flags the ones who
+graduate and points out the ones who were out of category so the director can
+confirm.
 
 ---
 
-# Autenticación
+# Authentication
 
-Funciona íntegramente en local: GoTrue corre en el stack de Docker y los correos
-salientes quedan en Mailpit (http://127.0.0.1:54424), sin salir a internet.
+Works entirely locally: GoTrue runs in the Docker stack and outgoing emails land
+in Mailpit (http://127.0.0.1:54424), without reaching the internet.
 
-## Nadie se registra solo
+## Nobody signs up on their own
 
-`enable_signup = false` en `config.toml`: el endpoint público de registro está
-cerrado. Las cuentas las crea la dirección por la Admin API.
+`enable_signup = false` in `config.toml`: the public sign-up endpoint is closed.
+Accounts are created by management through the Admin API.
 
 ```bash
 curl -X POST http://127.0.0.1:54421/auth/v1/admin/users \
@@ -298,78 +334,91 @@ curl -X POST http://127.0.0.1:54421/auth/v1/admin/users \
        "user_metadata":{"nombre_completo":"Prof. Méndez","rol":"entrenador"}}'
 ```
 
-El `rol` en `user_metadata` es lo que hace que el perfil nazca **activo**. Un
-usuario creado por cualquier otra vía nace inactivo, y como `mi_academia()` y
-`mi_rol()` filtran por `activo`, no pasa ninguna política: no ve un solo
-jugador aunque tenga un JWT válido. Son dos capas independientes a propósito.
+The `rol` in `user_metadata` is what makes the profile start **active**. A user
+created through any other path starts inactive, and since `mi_academia()` and
+`mi_rol()` filter by `activo`, no policy passes: they don't see a single player
+even with a valid JWT. Two independent layers on purpose.
 
-Para activar a alguien o cambiarle el rol:
+To activate someone or change their role:
 
 ```sql
 update perfiles set activo = true, rol = 'entrenador' where id = '<uuid>';
 ```
 
-## Dos detalles del CLI que cuestan tiempo
+## Two CLI details that cost time
 
-- `[auth.email].enable_signup` **no** controla el registro: el CLI lo mapea a
-  `GOTRUE_EXTERNAL_EMAIL_ENABLED`, así que ponerlo en `false` apaga el login por
-  correo entero. El que bloquea el registro es `[auth].enable_signup`.
-- Cambiar `config.toml` requiere `supabase stop && supabase start`.
-  `supabase db reset` **no** recarga la configuración de Auth.
+- `[auth.email].enable_signup` does **not** control sign-up: the CLI maps it to
+  `GOTRUE_EXTERNAL_EMAIL_ENABLED`, so setting it to `false` turns off email
+  login entirely. The one that blocks sign-up is `[auth].enable_signup`.
+- Changing `config.toml` requires `supabase stop && supabase start`.
+  `supabase db reset` does **not** reload the Auth config.
 
-## Y uno de GoTrue
+## And one from GoTrue
 
-La Admin API **no valida** `minimum_password_length`. Al crear usuarios desde la
-app hay que validar el largo en el formulario, o mejor, mandar invitación para
-que cada quien fije su propia contraseña (ese flujo sí valida).
+The Admin API does **not** validate `minimum_password_length`. When creating
+users from the app you must validate the length in the form, or better, send an
+invite so each person sets their own password (that flow does validate).
 
-## Rutas
+## Routes
 
-| Ruta | Sin sesión |
+| Route | No session |
 | --- | --- |
-| `/login` | accesible |
-| `/api/health` | accesible |
-| Cualquier página | 307 → `/login` |
-| Cualquier `/api/*` | **401 JSON**, no redirección |
+| `/login` | accessible |
+| `/api/health` | accessible |
+| Any page | 307 → `/login` |
+| Any `/api/*` | **401 JSON**, not a redirect |
 
-Las rutas de API responden 401 en JSON a propósito: redirigirlas devolvería HTML
-a un `fetch()`, imposible de manejar en el cliente.
+API routes answer 401 in JSON on purpose: redirecting them would return HTML to
+a `fetch()`, impossible to handle on the client.
 
-El middleware usa `getUser()`, no `getSession()`: el segundo lee la cookie sin
-verificarla contra Supabase, y en el servidor eso no es confiable.
+The proxy uses `getUser()`, not `getSession()`: the latter reads the cookie
+without verifying it against Supabase, and on the server that is not
+trustworthy.
 
 ---
 
-## Aplicar a Supabase hospedado
+## Apply to hosted Supabase
 
 ```bash
-npx supabase link --project-ref <tu-project-ref>
+npx supabase link --project-ref <your-project-ref>
 npx supabase db push
 ```
 
-Luego pega `supabase/seed.sql` en el SQL Editor y actualiza `.env.local` con la
-URL y la anon key de *Project Settings → API*.
+Then run `supabase db query --linked -f supabase/seed.sql` (or paste it in the
+SQL Editor) and update `.env.local` with the URL and anon key from
+*Project Settings → API*.
 
-## Estructura del proyecto
+## Project structure
 
 ```
 src/
 ├── app/
 │   ├── layout.tsx
-│   ├── page.tsx
-│   └── api/                    endpoints propios (los que no cubre PostgREST)
+│   ├── (app)/                  authenticated area (dashboard + future modules)
+│   ├── login/
+│   └── api/                    own endpoints (the ones PostgREST doesn't cover)
 ├── components/
+│   ├── app/                    app chrome: sidebar, header, bottom nav, dashboard blocks
+│   └── ui/                     reusable primitives: card, button, metric, badges, toggles
+├── i18n/
+│   ├── config.ts               locales + cookie name
+│   ├── request.ts              per-request locale resolution
+│   └── actions.ts              setLocale() server action
 ├── lib/
 │   ├── supabase/
 │   │   ├── client.ts           Client Components
-│   │   ├── server.ts           Server Components y Route Handlers
-│   │   └── middleware.ts       refresco de sesión y rutas protegidas
+│   │   ├── server.ts           Server Components and Route Handlers
+│   │   └── middleware.ts       session refresh and protected routes
 │   ├── env.ts
 │   └── utils.ts
-├── server/                     lógica de negocio (solo servidor)
+├── server/                     business logic (server only)
 └── types/
-    ├── database.ts             GENERADO — no editar a mano
+    ├── database.ts             GENERATED — do not edit by hand
     └── index.ts
+
+messages/
+├── en.json                     default UI language
+└── es.json                     Spanish translation
 
 supabase/
 ├── migrations/
@@ -378,11 +427,11 @@ supabase/
 │   ├── 20260803120200_rls.sql
 │   ├── 20260803120300_auditoria_y_storage.sql
 │   └── 20260803120400_permisos.sql
-└── seed.sql                    academia, ciclo 2026, categorías, criterios
+└── seed.sql                    academy, ciclo 2026, categories, criteria
 ```
 
-## Siguiente etapa
+## Next stage
 
-Etapa 0 (fundaciones de base de datos) está cerrada y verificada. Sigue:
-login y layout con menú → catálogos → jugadores → inscripciones → asistencia →
-evaluación → dashboard.
+Stage 0 (database foundations) is closed and verified. Next:
+login and layout with menu → catalogs → players → registrations → attendance →
+assessment → dashboard.
