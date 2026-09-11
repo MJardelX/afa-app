@@ -1,3 +1,4 @@
+import { sanitizeSearch } from "@/lib/search";
 import { createClient } from "@/lib/supabase/server";
 
 /** Squad member that can be assigned as a team's coach or assistant. */
@@ -207,7 +208,7 @@ export async function searchEnrollCandidates(
   term: string,
   teamId: string,
 ): Promise<EnrollCandidate[]> {
-  const t = term.replace(/[%,()]/g, "").trim();
+  const t = sanitizeSearch(term);
   if (t.length < 2) return [];
   const supabase = await createClient();
   const { data } = await supabase

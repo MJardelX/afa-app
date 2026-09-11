@@ -15,5 +15,7 @@ export async function setLocale(locale: Locale) {
     maxAge: ONE_YEAR,
     path: "/",
     sameSite: "lax",
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
   });
 }

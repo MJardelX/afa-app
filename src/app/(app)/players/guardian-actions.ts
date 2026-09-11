@@ -4,9 +4,11 @@ import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 
 import { errorMessage } from "@/lib/errors";
+import { sanitizeSearch } from "@/lib/search";
 import { relationshipSchema } from "@/lib/schemas/tutor";
 import { createClient } from "@/lib/supabase/server";
 import { currentProfile, isAdmin } from "@/server/players";
+import { searchAllowed } from "@/server/throttle";
 
 export type GuardianState = {
   ok?: boolean;
@@ -21,7 +23,8 @@ async function requireAdmin() {
 
 /** Registered guardians matching a term, minus those already on this player. */
 export async function buscarTutores(jugadorId: string, term: string) {
-  const t = term.replace(/[%,()]/g, "").trim();
+  if (!(await searchAllowed())) return [];
+  const t = sanitizeSearch(term);
   if (t.length < 2) return [];
 
   const supabase = await createClient();

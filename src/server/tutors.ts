@@ -1,5 +1,6 @@
-import { createClient } from "@/lib/supabase/server";
 import { PAGE_SIZE, rangeFor } from "@/lib/pagination";
+import { sanitizeSearch } from "@/lib/search";
+import { createClient } from "@/lib/supabase/server";
 
 /** Guardian rows + how many players each is linked to. */
 export async function listTutors({ q, page = 1 }: { q?: string; page?: number }) {
@@ -15,7 +16,7 @@ export async function listTutors({ q, page = 1 }: { q?: string; page?: number })
     .order("nombres")
     .range(from, to);
 
-  const term = (q ?? "").replace(/[%,()]/g, "").trim();
+  const term = sanitizeSearch(q);
   if (term) {
     query = query.or(
       `nombres.ilike.%${term}%,apellidos.ilike.%${term}%,telefono.ilike.%${term}%,dpi.ilike.%${term}%`,
@@ -76,7 +77,7 @@ export async function playerGuardians(jugadorId: string) {
 
 /** Typeahead for linking an existing guardian. */
 export async function searchTutors(term: string, limit = 8) {
-  const t = term.replace(/[%,()]/g, "").trim();
+  const t = sanitizeSearch(term);
   if (t.length < 2) return [];
   const supabase = await createClient();
   const { data } = await supabase

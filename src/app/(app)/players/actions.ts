@@ -13,6 +13,7 @@ import {
 import { guardianSchema } from "@/lib/schemas/tutor";
 import { createClient } from "@/lib/supabase/server";
 import { activeSeason, currentProfile, isAdmin } from "@/server/players";
+import { searchAllowed } from "@/server/throttle";
 
 export type PlayerFormState = {
   error?: string;
@@ -31,7 +32,8 @@ export type TutorMatch = {
 /** Looks up a guardian by DPI so the create form can prefill + link instead
  *  of creating a duplicate. Called from the client as the DPI is typed. */
 export async function lookupTutorByDpi(dpi: string): Promise<TutorMatch> {
-  const clean = dpi.trim();
+  if (!(await searchAllowed())) return null;
+  const clean = dpi.replace(/[^0-9]/g, "").slice(0, 20);
   if (clean.length < 5) return null;
 
   const supabase = await createClient();

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -30,6 +31,8 @@ const bootScript = `try{var d=document.documentElement;var t=localStorage.getIte
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const locale = await getLocale();
+  // Per-request CSP nonce, set by the middleware.
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
 
   return (
     <html
@@ -38,7 +41,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       suppressHydrationWarning
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: bootScript }} />
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: bootScript }} />
       </head>
       <body className="flex min-h-full flex-col bg-canvas text-fg">
         <NextIntlClientProvider>{children}</NextIntlClientProvider>

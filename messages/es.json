@@ -72,6 +72,7 @@
     "errorMissingFields": "Ingresá tu correo y tu contraseña.",
     "errorBadCredentials": "Correo o contraseña incorrectos.",
     "errorConnection": "No se pudo conectar con el servidor. Avisá a la dirección.",
+    "errorTooManyAttempts": "Demasiados intentos. Esperá unos minutos y probá de nuevo.",
     "feature1": "Ficha completa de cada jugador",
     "feature2": "Asistencia y ranking automáticos",
     "feature3": "Evaluación por período con rúbrica"

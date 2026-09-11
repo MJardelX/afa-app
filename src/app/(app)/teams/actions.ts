@@ -12,6 +12,7 @@ import {
   searchEnrollCandidates,
   type EnrollCandidate,
 } from "@/server/teams";
+import { searchAllowed } from "@/server/throttle";
 
 export type TeamFormState = {
   error?: string;
@@ -148,7 +149,7 @@ export async function buscarJugadoresParaEquipo(
   term: string,
 ): Promise<EnrollCandidate[]> {
   const profile = await requireAdmin();
-  if (!profile) return [];
+  if (!profile || !(await searchAllowed())) return [];
   return searchEnrollCandidates(term, teamId);
 }
 

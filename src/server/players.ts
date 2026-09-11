@@ -1,5 +1,6 @@
-import { createClient } from "@/lib/supabase/server";
 import { PAGE_SIZE, rangeFor } from "@/lib/pagination";
+import { sanitizeSearch } from "@/lib/search";
+import { createClient } from "@/lib/supabase/server";
 
 export type PlayerStatus = "activo" | "inactivo" | "retirado" | "egresado";
 export type PlayerFlag = "sin_inscribir" | "sin_equipo" | "fuera_de_categoria";
@@ -34,7 +35,7 @@ export async function listPlayers(f: PlayerListFilters) {
 
   if (f.flag) query = query.eq(f.flag, true);
 
-  const q = (f.q ?? "").replace(/[%,()]/g, "").trim();
+  const q = sanitizeSearch(f.q);
   if (q) {
     query = query.or(
       `nombres.ilike.%${q}%,apellidos.ilike.%${q}%,codigo.ilike.%${q}%`,

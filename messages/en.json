@@ -72,6 +72,7 @@
     "errorMissingFields": "Enter your email and password.",
     "errorBadCredentials": "Incorrect email or password.",
     "errorConnection": "Could not connect to the server. Let management know.",
+    "errorTooManyAttempts": "Too many attempts. Wait a few minutes and try again.",
     "feature1": "Complete profile for every player",
     "feature2": "Automatic attendance and ranking",
     "feature3": "Period assessment with a rubric"
