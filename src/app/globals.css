@@ -1,48 +1,48 @@
 @import "tailwindcss";
 
 /* ===========================================================================
-   AFA MANAGER — Sistema de diseño
-   Marca: blanco, celeste y amarillo.
+   AFA MANAGER — Design system
+   Brand: white, sky blue and yellow.
 
-   Dos capas:
-   1. PRIMITIVAS — la paleta cruda. No se usan directamente en componentes.
-   2. SEMÁNTICAS — qué significa cada color. Es lo que se usa al construir.
+   Two layers:
+   1. PRIMITIVES — the raw palette. Never used directly in components.
+   2. SEMANTIC — what each color means. This is what you build with.
 
-   Los temas se definen con light-dark(), así cada token existe UNA sola vez
-   con sus dos valores juntos, en vez de repetir bloques claro/oscuro. El
-   tema lo decide `color-scheme`, que respeta el sistema salvo que el usuario
-   elija manualmente (atributo data-theme en <html>).
+   Themes are defined with light-dark(), so every token exists ONCE with both
+   values together instead of repeating light/dark blocks. The theme is driven
+   by `color-scheme`, which follows the system unless the user picks one
+   manually (data-theme attribute on <html>).
 
-   Regla de contraste, medida y no supuesta:
-   - Celeste 600 o más claro NUNCA lleva texto blanco encima (4.27:1, falla).
-   - --marca es celeste-700: 6.11:1 con blanco. Ese es el piso.
-   - Amarillo jamás como texto sobre blanco; solo como superficie de acento
-     con texto celeste-900 encima.
+   Contrast rule, measured and not assumed:
+   - Sky 600 or lighter NEVER carries white text (4.27:1, fails).
+   - --brand is sky-700: 6.11:1 on white. That is the floor.
+   - Yellow is never text on white; only an accent surface with sky-900 text.
    =========================================================================== */
 
 /* ---------------------------------------------------------------------------
-   1. PRIMITIVAS
+   1. PRIMITIVES
    --------------------------------------------------------------------------- */
 @theme {
-  --color-celeste-50: #eff9fe;
-  --color-celeste-100: #def2fc;
-  --color-celeste-200: #b6e5f9;
-  --color-celeste-300: #7fd2f4;
-  --color-celeste-400: #40bbec;
-  --color-celeste-500: #16a1dc;
-  --color-celeste-600: #0a82ba;
-  --color-celeste-700: #0b6896;
-  --color-celeste-800: #10577c;
-  --color-celeste-900: #124867;
-  --color-celeste-950: #0c2e44;
+  --color-sky-50: #eff9fe;
+  --color-sky-100: #def2fc;
+  --color-sky-200: #b6e5f9;
+  --color-sky-300: #7fd2f4;
+  --color-sky-400: #40bbec;
+  --color-sky-500: #16a1dc;
+  --color-sky-600: #0a82ba;
+  --color-sky-700: #0b6896;
+  --color-sky-800: #10577c;
+  --color-sky-900: #124867;
+  --color-sky-950: #0c2e44;
 
-  --color-amarillo-100: #fef9c3;
-  --color-amarillo-200: #fef08a;
-  --color-amarillo-300: #fde047;
-  --color-amarillo-400: #facc15;
-  --color-amarillo-500: #eab308;
-  --color-amarillo-600: #ca8a04;
-  --color-amarillo-700: #a16207;
+  /* Sunflower-gold scale, keyed off the crest (bright #fbcb17 / deep #f4aa19). */
+  --color-yellow-100: #fbe7b5;
+  --color-yellow-200: #f8d78a;
+  --color-yellow-300: #f6c84a;
+  --color-yellow-400: #f7b70e;
+  --color-yellow-500: #e8a107;
+  --color-yellow-600: #c07f05;
+  --color-yellow-700: #8a5106;
 
   --font-sans: var(--font-geist-sans), system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), monospace;
@@ -51,95 +51,151 @@
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
   --radius-2xl: 1.25rem;
+  --radius-3xl: 1.75rem;
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* ---------------------------------------------------------------------------
-   2. SEMÁNTICAS — light-dark(claro, oscuro)
+   2. SEMANTIC — light-dark(light, dark)
    --------------------------------------------------------------------------- */
 :root {
   color-scheme: light dark;
 
-  /* Superficies */
-  --fondo: light-dark(#ffffff, #0a2333);
-  --superficie: light-dark(#ffffff, #103046);
-  --superficie-2: light-dark(#f6fbfe, #143b55);
-  --superficie-marca: light-dark(#eff9fe, #12405c);
+  /* Surfaces. Panels sit a hair off the canvas — barely a tint of lift — and
+     lean on `--line` to separate, not fill contrast or shadow. Glass is now
+     reserved for the floating chrome and the login card. */
+  /* Dark isn't a generic near-black: it's a deep "sky at dusk" teal-navy, the
+     academy's own colour turned right down. Panels barely lift off the canvas
+     — the `--line` edge is what separates them, not a fill jump. `--surface-2`
+     is the only real step, and only because it marks a hover / nested state. */
+  --canvas: light-dark(#dbe4ee, #0c2130);
+  --surface: light-dark(#e7ecf2, #0e2634);
+  --surface-2: light-dark(#dee5ee, #17394e);
+  --surface-brand: light-dark(#e3eef7, #123650);
 
-  /* Texto */
-  --texto: light-dark(#0f172a, #e8f4fb);
-  --texto-tenue: light-dark(#5a6b80, #a8c6d8);
-  --texto-suave: light-dark(#5e7285, #8fb0c6);
+  /* Elevation. Cards are border-defined now, so `--elev-1` is only a whisper;
+     `--elev-2` is a gentle hover lift; `--elev-pop` still floats menus. */
+  --elev-1: 0 1px 2px light-dark(rgb(15 40 68 / 0.03), rgb(0 8 16 / 0.35));
+  --elev-2:
+    0 2px 8px -2px light-dark(rgb(15 40 68 / 0.08), rgb(0 8 16 / 0.5)),
+    0 1px 2px light-dark(rgb(15 40 68 / 0.04), rgb(0 8 16 / 0.3));
+  --elev-pop:
+    0 12px 32px -10px light-dark(rgb(11 104 150 / 0.2), rgb(1 10 18 / 0.6));
 
-  /* Líneas */
-  --borde: light-dark(#e2e8f0, #1e4a66);
-  --borde-fuerte: light-dark(#cbd5e1, #2b6285);
+  /* Text */
+  --fg: light-dark(#0f172a, #e8f2fa);
+  --fg-muted: light-dark(#5a6b80, #9dbccf);
+  --fg-faint: light-dark(#5e7285, #78a0b6);
 
-  /* Acción principal — celeste-700 en ambos temas: es el piso de contraste */
-  --marca: light-dark(#0b6896, #0b6896);
-  --marca-hover: light-dark(#10577c, #0a82ba);
-  --marca-texto: #ffffff;
-  --marca-sutil: light-dark(#eff9fe, rgb(18 72 103 / 0.55));
-  --marca-legible: light-dark(#0b6896, #7fd2f4);
+  /* Lines. With panels sitting right on top of the canvas, `--line` carries all
+     the separation — a cool grey hairline (barely a hint of blue, not sky).
+     `--line-strong` is the hover / emphasis step. */
+  --line: light-dark(#c6ced8, #444e57);
+  --line-strong: light-dark(#a9b6c4, #5c6771);
 
-  /* Acento — amarillo. Superficie, nunca texto sobre blanco. */
-  --acento: light-dark(#facc15, #facc15);
-  --acento-texto: #124867;
+  /* Outline for interactive controls (inputs, selects, dashed drop targets).
+     Held to >=3:1 against the field fill so a control never reads as a
+     disabled block or a loading skeleton (WCAG 1.4.11). */
+  --control-border: light-dark(#8496a6, #6a7580);
+  --stepper-track: light-dark(#dbe4ec, #3a444e);
 
-  /* Estados */
-  --exito: light-dark(#15803d, #4ade80);
-  --exito-fondo: light-dark(#f0fdf4, rgb(20 83 45 / 0.35));
-  --alerta: light-dark(#a16207, #fbbf24);
-  --alerta-fondo: light-dark(#fefce8, rgb(113 63 18 / 0.35));
-  --peligro: light-dark(#b91c1c, #fca5a5);
-  --peligro-fondo: light-dark(#fef2f2, rgb(127 29 29 / 0.35));
+  /* Primary action — sky-700 in both themes: the contrast floor */
+  --brand: light-dark(#0b6896, #0b6896);
+  --brand-hover: light-dark(#10577c, #0a82ba);
+  --brand-fg: #ffffff;
+  --brand-subtle: light-dark(#eff9fe, rgb(23 90 128 / 0.5));
+  --brand-legible: light-dark(#0b6896, #74cdf6);
 
-  /* Semáforo de asistencia — buena ≥85, regular ≥70, baja <70
-     NO es verde/amarillo/rojo puro. Esa tríada da ΔE 3.6 entre verde y
-     amarillo en protanopia: un entrenador daltónico no distingue "buena" de
-     "regular", que es justo la lectura principal del sistema. Teal / ámbar /
-     carmín da ΔE 21.1 en la misma prueba.
-     Aun así nunca se usa el color solo: siempre con ícono y etiqueta. */
-  --estado-buena: light-dark(#047857, #2dd4bf);
-  --estado-buena-fondo: light-dark(#ecfdf5, rgb(4 120 87 / 0.24));
-  --estado-buena-texto: light-dark(#065f46, #5eead4);
-  --estado-regular: light-dark(#f59e0b, #fbbf24);
-  --estado-regular-fondo: light-dark(#fffbeb, rgb(180 83 9 / 0.28));
-  --estado-regular-texto: light-dark(#92400e, #fcd34d);
-  --estado-baja: light-dark(#be123c, #fb7185);
-  --estado-baja-fondo: light-dark(#fff1f2, rgb(190 18 60 / 0.24));
-  --estado-baja-texto: light-dark(#9f1239, #fda4af);
+  /* Accent — the sunflower gold sampled from the crest (bright petal #fbcb17,
+     deep petal #f4aa19): a warm amber-gold, not a green-lemon yellow. Surface,
+     never text on white. */
+  --accent: light-dark(#f7b70e, #f7b70e);
+  --accent-fg: #17324a;
+  --accent-subtle: light-dark(#fbe7b5, rgb(247 183 14 / 0.17));
 
-  /* Gráficas. Una sola serie = un solo color, nunca un arcoíris por categoría.
-     En oscuro sube a celeste-500: celeste-700 sobre la superficie oscura
-     queda en 2.25:1 y no llega al piso de 3:1 para marcas. */
-  --grafico-barra: light-dark(#0b6896, #16a1dc);
-  --grafico-pista: light-dark(#eaf2f7, rgb(255 255 255 / 0.09));
+  /* Brand banner: sky gradient with white text (6.1:1, measured). Stays in
+     500->800: below that the blue turns navy and stops being the academy's
+     color. */
+  --banner-from: #16a1dc;
+  --banner-via: #0a82ba;
+  --banner-to: #10577c;
+  --banner-fg: #ffffff;
+  --banner-fg-muted: #def2fc;
 
-  /* Foco */
-  --anillo: #16a1dc;
+  /* States */
+  --success: light-dark(#15803d, #4ade80);
+  --success-bg: light-dark(#f0fdf4, rgb(20 83 45 / 0.35));
+  --warning: light-dark(#8a5106, #f7c23e);
+  --warning-bg: light-dark(#fbeac2, rgb(122 71 10 / 0.35));
+  --danger: light-dark(#b91c1c, #fca5a5);
+  --danger-bg: light-dark(#fef2f2, rgb(127 29 29 / 0.35));
 
-  /* Vidrio */
-  --vidrio: light-dark(rgb(255 255 255 / 0.88), rgb(20 52 74 / 0.9));
-  --vidrio-difuso: light-dark(rgb(255 255 255 / 0.55), rgb(255 255 255 / 0.08));
-  --vidrio-borde: light-dark(rgb(255 255 255 / 0.85), rgb(255 255 255 / 0.14));
-  --vidrio-luz: light-dark(rgb(255 255 255 / 0.9), rgb(255 255 255 / 0.22));
-  --vidrio-sombra: light-dark(rgb(11 104 150 / 0.28), rgb(2 12 20 / 0.55));
-  --campo: light-dark(rgb(255 255 255 / 0.9), rgb(12 38 55 / 0.9));
-  --campo-difuso: light-dark(rgb(255 255 255 / 0.6), rgb(255 255 255 / 0.07));
-  --campo-borde: light-dark(rgb(255 255 255 / 0.9), rgb(255 255 255 / 0.14));
+  /* Attendance scale — good >=85, fair >=70, low <70.
+     NOT pure green/yellow/red. That triad gives dE 3.6 between green and
+     yellow in protanopia: a colorblind coach can't tell "good" from "fair",
+     which is the system's main read. Teal / amber / crimson gives dE 21.1 on
+     the same test. Even so the color is never used alone: always with an icon
+     and a label. */
+  --status-good: light-dark(#047857, #2dd4bf);
+  --status-good-bg: light-dark(#ecfdf5, rgb(4 120 87 / 0.24));
+  --status-good-fg: light-dark(#065f46, #5eead4);
+  --status-fair: light-dark(#f59e0b, #fbbf24);
+  --status-fair-bg: light-dark(#fffbeb, rgb(180 83 9 / 0.28));
+  --status-fair-fg: light-dark(#92400e, #fcd34d);
+  --status-low: light-dark(#be123c, #fb7185);
+  --status-low-bg: light-dark(#fff1f2, rgb(190 18 60 / 0.24));
+  --status-low-fg: light-dark(#9f1239, #fda4af);
 
-  /* Halos: el color difuso que el vidrio refracta. Son tokens y no clases
-     dark: sueltas para que el cambio manual de tema también los afecte. */
-  --halo-cima: light-dark(#ffffff, #103046);
-  --halo-medio: light-dark(rgb(239 249 254 / 0.6), #0a2333);
-  --halo-base: light-dark(rgb(222 242 252 / 0.5), #0c2e44);
+  /* Charts. One series = one color, never a rainbow per category.
+     In dark it goes up to sky-500: sky-700 on the dark surface is 2.25:1 and
+     misses the 3:1 floor for marks. */
+  --chart-bar: light-dark(#0b6896, #16a1dc);
+  --chart-track: light-dark(#eaf2f7, rgb(255 255 255 / 0.09));
+
+  /* Focus */
+  --ring: #16a1dc;
+
+  /* Glass — for chrome (topbar, sidebar, mobile nav, login card). Heavier
+     frost, near-opaque so text over scrolling content stays legible. */
+  --glass: light-dark(rgb(255 255 255 / 0.88), rgb(15 44 62 / 0.94));
+  --glass-frost: light-dark(rgb(255 255 255 / 0.68), rgb(15 45 63 / 0.5));
+  --glass-border: light-dark(rgb(255 255 255 / 0.85), rgb(255 255 255 / 0.12));
+  --glass-sheen: light-dark(rgb(255 255 255 / 0.9), rgb(255 255 255 / 0.22));
+  --glass-shadow: light-dark(rgb(11 104 150 / 0.28), rgb(1 10 18 / 0.6));
+
+  /* Glass panel — for dashboard widgets / accent cards floating over the
+     aurora. Lighter than chrome glass; content is short (numbers, labels), so
+     more transparency is safe. Dark mode gets a higher floor per 2026 guidance
+     (translucent panels otherwise vanish into an inky background). */
+  --panel-frost: light-dark(rgb(255 255 255 / 0.66), rgb(18 46 68 / 0.62));
+  --panel-solid: light-dark(rgb(255 255 255 / 0.9), rgb(16 48 70 / 0.92));
+  --panel-border: light-dark(rgb(255 255 255 / 0.7), rgb(255 255 255 / 0.1));
+  --panel-sheen: light-dark(rgb(255 255 255 / 0.85), rgb(255 255 255 / 0.16));
+
+  --field: light-dark(rgb(255 255 255 / 0.9), rgb(14 42 62 / 0.9));
+  --field-frost: light-dark(rgb(255 255 255 / 0.6), rgb(255 255 255 / 0.07));
+  --field-border: light-dark(rgb(255 255 255 / 0.9), rgb(255 255 255 / 0.14));
+
+  /* Aurora — the soft, fixed brand wash behind everything so glass has colour
+     and lightness variation to refract. Kept very low-contrast: this is a data
+     app, the background must never fight the content. */
+  --aurora-1: light-dark(rgb(64 187 236 / 0.24), rgb(31 173 232 / 0.22));
+  --aurora-2: light-dark(rgb(247 183 14 / 0.13), rgb(247 190 45 / 0.09));
+  --aurora-3: light-dark(rgb(127 210 244 / 0.2), rgb(18 121 176 / 0.26));
+
+  /* Halos: the diffuse color the glass refracts. They are tokens and not loose
+     dark: classes so a manual theme change affects them too. */
+  --halo-top: light-dark(#ffffff, #123a53);
+  --halo-mid: light-dark(rgb(239 249 254 / 0.6), #0c2438);
+  --halo-base: light-dark(rgb(222 242 252 / 0.5), #0e3349);
   --halo-a: light-dark(rgb(127 210 244 / 0.55), rgb(10 130 186 / 0.35));
-  --halo-b: light-dark(rgb(254 240 138 / 0.34), rgb(202 138 4 / 0.1));
+  --halo-b: light-dark(rgb(250 214 130 / 0.36), rgb(224 161 7 / 0.12));
   --halo-c: light-dark(rgb(64 187 236 / 0.35), rgb(22 161 220 / 0.2));
 }
 
-/* Tailwind resuelve `dark:` con prefers-color-scheme, que ignora la elección
-   manual. Se redefine para que atienda a las dos cosas. */
+/* Tailwind resolves `dark:` with prefers-color-scheme, which ignores the manual
+   choice. It is redefined so it honors both. */
 @custom-variant dark {
   &:where([data-theme="dark"], [data-theme="dark"] *) {
     @slot;
@@ -151,8 +207,8 @@
   }
 }
 
-/* Elección manual del usuario. Solo cambia color-scheme: los tokens de
-   arriba se recalculan solos porque usan light-dark(). */
+/* Manual user choice. It only changes color-scheme: the tokens above recompute
+   on their own because they use light-dark(). */
 :root[data-theme="light"] {
   color-scheme: light;
 }
@@ -161,64 +217,90 @@
 }
 
 /* ---------------------------------------------------------------------------
-   3. PUENTE A TAILWIND — genera bg-*, text-*, border-*
+   3. BRIDGE TO TAILWIND — generates bg-*, text-*, border-*
    --------------------------------------------------------------------------- */
 @theme inline {
-  --color-fondo: var(--fondo);
-  --color-superficie: var(--superficie);
-  --color-superficie-2: var(--superficie-2);
-  --color-superficie-marca: var(--superficie-marca);
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-brand: var(--surface-brand);
 
-  --color-texto: var(--texto);
-  --color-tenue: var(--texto-tenue);
-  --color-suave: var(--texto-suave);
+  --color-fg: var(--fg);
+  --color-muted: var(--fg-muted);
+  --color-faint: var(--fg-faint);
 
-  --color-borde: var(--borde);
-  --color-borde-fuerte: var(--borde-fuerte);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-control-border: var(--control-border);
+  --color-stepper-track: var(--stepper-track);
 
-  --color-marca: var(--marca);
-  --color-marca-hover: var(--marca-hover);
-  --color-marca-texto: var(--marca-texto);
-  --color-marca-sutil: var(--marca-sutil);
-  --color-marca-legible: var(--marca-legible);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-fg: var(--brand-fg);
+  --color-brand-subtle: var(--brand-subtle);
+  --color-brand-legible: var(--brand-legible);
 
-  --color-acento: var(--acento);
-  --color-acento-texto: var(--acento-texto);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-subtle: var(--accent-subtle);
 
-  --color-exito: var(--exito);
-  --color-exito-fondo: var(--exito-fondo);
-  --color-alerta: var(--alerta);
-  --color-alerta-fondo: var(--alerta-fondo);
-  --color-peligro: var(--peligro);
-  --color-peligro-fondo: var(--peligro-fondo);
+  --color-banner-from: var(--banner-from);
+  --color-banner-via: var(--banner-via);
+  --color-banner-to: var(--banner-to);
+  --color-banner-fg: var(--banner-fg);
+  --color-banner-fg-muted: var(--banner-fg-muted);
 
-  --color-estado-buena: var(--estado-buena);
-  --color-estado-buena-fondo: var(--estado-buena-fondo);
-  --color-estado-buena-texto: var(--estado-buena-texto);
-  --color-estado-regular: var(--estado-regular);
-  --color-estado-regular-fondo: var(--estado-regular-fondo);
-  --color-estado-regular-texto: var(--estado-regular-texto);
-  --color-estado-baja: var(--estado-baja);
-  --color-estado-baja-fondo: var(--estado-baja-fondo);
-  --color-estado-baja-texto: var(--estado-baja-texto);
+  --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
+  --color-warning: var(--warning);
+  --color-warning-bg: var(--warning-bg);
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
 
-  --color-grafico-barra: var(--grafico-barra);
-  --color-grafico-pista: var(--grafico-pista);
+  --color-status-good: var(--status-good);
+  --color-status-good-bg: var(--status-good-bg);
+  --color-status-good-fg: var(--status-good-fg);
+  --color-status-fair: var(--status-fair);
+  --color-status-fair-bg: var(--status-fair-bg);
+  --color-status-fair-fg: var(--status-fair-fg);
+  --color-status-low: var(--status-low);
+  --color-status-low-bg: var(--status-low-bg);
+  --color-status-low-fg: var(--status-low-fg);
+
+  --color-chart-bar: var(--chart-bar);
+  --color-chart-track: var(--chart-track);
+
+  --shadow-card: var(--elev-1);
+  --shadow-card-hover: var(--elev-2);
+  --shadow-pop: var(--elev-pop);
 }
 
 /* ---------------------------------------------------------------------------
    4. BASE
    --------------------------------------------------------------------------- */
 body {
-  background: var(--fondo);
-  color: var(--texto);
+  background: var(--canvas);
+  color: var(--fg);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-/* Un solo anillo de foco en toda la app, visible sobre claro y sobre oscuro. */
+::selection {
+  background: light-dark(rgb(64 187 236 / 0.28), rgb(64 187 236 / 0.32));
+}
+
+/* Headings read tighter at large sizes; opt out per element when needed. */
+h1,
+h2,
+h3 {
+  letter-spacing: -0.014em;
+}
+
+/* A single focus ring across the whole app, visible on light and dark. */
 :where(a, button, input, select, textarea, [tabindex]):focus-visible {
-  outline: 2px solid var(--anillo);
+  outline: 2px solid var(--ring);
   outline-offset: 2px;
   border-radius: var(--radius-md);
 }
@@ -233,35 +315,143 @@ body {
 }
 
 /* ---------------------------------------------------------------------------
-   5. VIDRIO (liquid glass)
-   Con moderación: la tarjeta de sesión y sus campos, nada más. El efecto solo
-   se percibe si hay color difuminado detrás; sobre blanco plano no se ve y
-   solo cuesta rendimiento.
+   5. GLASS (liquid glass)
+   Used sparingly: the session card and its fields, nothing else. The effect is
+   only perceptible if there is diffuse color behind it; over flat white it is
+   invisible and only costs performance.
 
-   Tres salvaguardas:
-   - Sin backdrop-filter, el fondo queda sólido y legible.
-   - Con prefers-reduced-transparency, se desactiva el desenfoque.
-   - El contraste se mide sobre el render, no se asume.
+   Three safeguards:
+   - Without backdrop-filter the background stays solid and legible.
+   - With prefers-reduced-transparency the blur is turned off.
+   - Contrast is measured on the render, not assumed.
    --------------------------------------------------------------------------- */
-/* Van en @layer components a propósito. Fuera de una capa, estas reglas
-   ganarían sobre las utilidades de Tailwind por orden de aparición, y el
-   `position: relative` de .vidrio anularía `fixed` y `sticky` — que es
-   exactamente lo que rompió la barra inferior y el encabezado pegajoso. */
-@layer components {
-  .vidrio {
-    position: relative;
-    background: var(--vidrio);
-    border: 1px solid var(--vidrio-borde);
-    box-shadow:
-      0 24px 64px -28px var(--vidrio-sombra),
-      0 2px 8px -4px var(--vidrio-sombra);
+/* These live in @layer components on purpose. Outside a layer, these rules
+   would win over Tailwind utilities by source order, and the `position:
+   relative` on .glass would override `fixed` and `sticky` — which is exactly
+   what broke the bottom bar and the sticky header. */
+/* Collapsible desktop sidebar with a persistent mini rail. State lives in
+   html[data-sidebar] (set by the boot script) so the width is right on the
+   first paint. "closed" = a 4rem icon-only rail, never fully hidden. */
+.app-sidebar {
+  width: 0;
+  transition: width 0.28s var(--ease-out-soft);
+}
+
+/* Sidebar, topbar and mobile bar are independent floating panels. They keep the
+   frosted fill + top specular line from .glass; a plain `--line` hairline is
+   all that sets them off the canvas — no drop shadow. */
+.app-sidebar.glass,
+.app-header.glass,
+.app-bottom-nav.glass {
+  border-color: var(--line);
+  box-shadow: none;
+}
+
+/* Wizard: the stepper rail and the action bar are sticky over scrolling form
+   content, so they stay solid + bordered like every other panel, with just a
+   soft lift so content reads clearly as it passes beneath. The rail's shadow
+   falls down onto the form; the action bar's falls UP. */
+.wizard-rail,
+.wizard-actions {
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+.wizard-rail {
+  box-shadow: 0 12px 26px -14px light-dark(rgb(15 40 68 / 0.22), rgb(0 0 0 / 0.6));
+}
+.wizard-actions {
+  box-shadow: 0 -12px 26px -14px light-dark(rgb(15 40 68 / 0.22), rgb(0 0 0 / 0.6));
+}
+
+/* When collapsed, a group label turns into a plain divider line. */
+.sidebar-mini-sep {
+  display: none;
+}
+
+@media (min-width: 64rem) {
+  .app-sidebar {
+    width: 14rem;
+  }
+  html[data-sidebar="closed"] .app-sidebar {
+    width: 4rem;
+  }
+
+  /* In the mini rail: drop the text, centre the icons, hide the extras. */
+  html[data-sidebar="closed"] .sidebar-label {
+    display: none;
+  }
+  html[data-sidebar="closed"] .sidebar-row {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  html[data-sidebar="closed"] .sidebar-collapse-btn {
+    display: none;
+  }
+  html[data-sidebar="closed"] .sidebar-mini-sep {
+    display: block;
+    margin: 0.375rem 0.625rem;
+    border-top: 1px solid var(--line);
+  }
+
+  /* On desktop the sidebar always carries the brand (mini or full), so the
+     header never repeats it. On mobile there is no sidebar — it stays. */
+  .brand-toggle {
+    display: none;
   }
 }
 
-/* La línea especular superior: es lo que lo hace leer como vidrio y no como
-   un rectángulo translúcido cualquiera. */
+/* Fine film grain for the brand banner: breaks up the flat gradient so it
+   reads as a surface with light on it rather than a colored rectangle. */
 @layer components {
-  .vidrio::before {
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.4;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+
+@layer components {
+  .glass {
+    position: relative;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    box-shadow:
+      0 24px 64px -28px var(--glass-shadow),
+      0 2px 8px -4px var(--glass-shadow);
+  }
+
+  /* Was the frosted "widget" panel; now a plain solid card. Glass is reserved
+     for the floating chrome (sidebar / topbar / mobile bar) and the login card
+     — everything in the page flow is a solid surface with a `--line` edge. */
+  .glass-panel {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    box-shadow: var(--elev-1);
+  }
+
+  /* Fixed aurora wash so glass has colour + lightness variation to refract. */
+  .app-bg {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background:
+      radial-gradient(60rem 40rem at 8% -8%, var(--aurora-1), transparent 60%),
+      radial-gradient(48rem 40rem at 105% 12%, var(--aurora-2), transparent 55%),
+      radial-gradient(50rem 45rem at 50% 115%, var(--aurora-3), transparent 60%),
+      var(--canvas);
+  }
+}
+
+/* The top specular line: it is what makes the chrome read as glass and not as
+   just a translucent rectangle. */
+@layer components {
+  .glass::before {
     content: "";
     position: absolute;
     inset: 0 0 auto 0;
@@ -269,24 +459,24 @@ body {
     background: linear-gradient(
       90deg,
       transparent,
-      var(--vidrio-luz) 22%,
-      var(--vidrio-luz) 78%,
+      var(--glass-sheen) 22%,
+      var(--glass-sheen) 78%,
       transparent
     );
     pointer-events: none;
   }
 
-  .campo-vidrio {
-    background: var(--campo);
-    border-color: var(--campo-borde);
+  .field-glass {
+    background: var(--field);
+    border-color: var(--field-border);
   }
 
-  /* Fondo difuminado detrás del vidrio */
+  /* Diffuse background behind the glass */
   .halos {
     background: linear-gradient(
       to bottom,
-      var(--halo-cima),
-      var(--halo-medio) 55%,
+      var(--halo-top),
+      var(--halo-mid) 55%,
       var(--halo-base)
     );
   }
@@ -308,28 +498,33 @@ body {
   }
 
   @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
-    .vidrio {
-      background: var(--vidrio-difuso);
-      -webkit-backdrop-filter: blur(22px) saturate(180%);
-      backdrop-filter: blur(22px) saturate(180%);
+    .glass {
+      background: var(--glass-frost);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      backdrop-filter: blur(20px) saturate(180%);
     }
-    .campo-vidrio {
-      background: var(--campo-difuso);
+    .field-glass {
+      background: var(--field-frost);
       -webkit-backdrop-filter: blur(8px) saturate(140%);
       backdrop-filter: blur(8px) saturate(140%);
     }
   }
 
-  @media (prefers-reduced-transparency: reduce) {
-    .vidrio,
-    .campo-vidrio {
+  /* Safeguards: without blur support the surface stays solid; when the user
+     asks for less transparency or more contrast, drop the glass entirely. */
+  @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+    .glass,
+    .field-glass {
       -webkit-backdrop-filter: none;
       backdrop-filter: none;
-      background: var(--superficie);
-      border-color: var(--borde);
+      background: var(--surface);
+      border-color: var(--line);
     }
-    .vidrio::before {
+    .glass::before {
       display: none;
+    }
+    .app-bg {
+      background: var(--canvas);
     }
   }
 }

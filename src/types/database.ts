@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -7,6 +7,11 @@
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
+  }
   graphql_public: {
     Tables: {
       [_ in never]: never
@@ -190,30 +195,42 @@ export type Database = {
         Row: {
           academia_id: string
           activa: boolean
+          color: string
           creado_en: string
+          dias_entreno: string[] | null
           edad_max: number
           edad_min: number
+          hora_entreno: string | null
           id: string
+          lugar_entreno: string | null
           nombre: string
           orden: number
         }
         Insert: {
           academia_id: string
           activa?: boolean
+          color?: string
           creado_en?: string
+          dias_entreno?: string[] | null
           edad_max: number
           edad_min: number
+          hora_entreno?: string | null
           id?: string
+          lugar_entreno?: string | null
           nombre: string
           orden?: number
         }
         Update: {
           academia_id?: string
           activa?: boolean
+          color?: string
           creado_en?: string
+          dias_entreno?: string[] | null
           edad_max?: number
           edad_min?: number
+          hora_entreno?: string | null
           id?: string
+          lugar_entreno?: string | null
           nombre?: string
           orden?: number
         }
@@ -375,11 +392,8 @@ export type Database = {
           auxiliar_id: string | null
           categoria_id: string
           creado_en: string
-          dias_entreno: string[] | null
           entrenador_id: string | null
-          hora_entreno: string | null
           id: string
-          lugar_entreno: string | null
           nombre: string
           temporada_id: string
         }
@@ -389,11 +403,8 @@ export type Database = {
           auxiliar_id?: string | null
           categoria_id: string
           creado_en?: string
-          dias_entreno?: string[] | null
           entrenador_id?: string | null
-          hora_entreno?: string | null
           id?: string
-          lugar_entreno?: string | null
           nombre: string
           temporada_id: string
         }
@@ -403,11 +414,8 @@ export type Database = {
           auxiliar_id?: string | null
           categoria_id?: string
           creado_en?: string
-          dias_entreno?: string[] | null
           entrenador_id?: string | null
-          hora_entreno?: string | null
           id?: string
-          lugar_entreno?: string | null
           nombre?: string
           temporada_id?: string
         }
@@ -446,6 +454,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_jugadores"
             referencedColumns: ["categoria_por_edad_id"]
+          },
+          {
+            foreignKeyName: "equipos_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "v_ranking_equipo"
+            referencedColumns: ["categoria_id"]
           },
           {
             foreignKeyName: "equipos_entrenador_id_fkey"
@@ -593,10 +608,12 @@ export type Database = {
           actualizado_en: string
           actualizado_por: string | null
           alergias: string | null
+          apto_deportivo: boolean | null
           contacto_emergencia_nombre: string | null
           contacto_emergencia_parentesco: string | null
           contacto_emergencia_telefono: string | null
           enfermedades: string | null
+          fecha_apto: string | null
           jugador_id: string
           medicamentos: string | null
           numero_poliza: string | null
@@ -608,10 +625,12 @@ export type Database = {
           actualizado_en?: string
           actualizado_por?: string | null
           alergias?: string | null
+          apto_deportivo?: boolean | null
           contacto_emergencia_nombre?: string | null
           contacto_emergencia_parentesco?: string | null
           contacto_emergencia_telefono?: string | null
           enfermedades?: string | null
+          fecha_apto?: string | null
           jugador_id: string
           medicamentos?: string | null
           numero_poliza?: string | null
@@ -623,10 +642,12 @@ export type Database = {
           actualizado_en?: string
           actualizado_por?: string | null
           alergias?: string | null
+          apto_deportivo?: boolean | null
           contacto_emergencia_nombre?: string | null
           contacto_emergencia_parentesco?: string | null
           contacto_emergencia_telefono?: string | null
           enfermedades?: string | null
+          fecha_apto?: string | null
           jugador_id?: string
           medicamentos?: string | null
           numero_poliza?: string | null
@@ -661,6 +682,7 @@ export type Database = {
       inscripciones: {
         Row: {
           actualizado_en: string
+          categoria_id: string | null
           creado_en: string
           creado_por: string | null
           equipo_id: string | null
@@ -677,6 +699,7 @@ export type Database = {
         }
         Insert: {
           actualizado_en?: string
+          categoria_id?: string | null
           creado_en?: string
           creado_por?: string | null
           equipo_id?: string | null
@@ -693,6 +716,7 @@ export type Database = {
         }
         Update: {
           actualizado_en?: string
+          categoria_id?: string | null
           creado_en?: string
           creado_por?: string | null
           equipo_id?: string | null
@@ -708,6 +732,34 @@ export type Database = {
           temporada_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "inscripciones_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "categorias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inscripciones_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "v_jugadores"
+            referencedColumns: ["categoria_id"]
+          },
+          {
+            foreignKeyName: "inscripciones_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "v_jugadores"
+            referencedColumns: ["categoria_por_edad_id"]
+          },
+          {
+            foreignKeyName: "inscripciones_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "v_ranking_equipo"
+            referencedColumns: ["categoria_id"]
+          },
           {
             foreignKeyName: "inscripciones_creado_por_fkey"
             columns: ["creado_por"]
@@ -972,8 +1024,9 @@ export type Database = {
         Row: {
           academia_id: string
           actualizado_en: string
+          categoria_id: string | null
           creado_en: string
-          equipo_id: string
+          equipo_id: string | null
           estado: Database["public"]["Enums"]["estado_sesion"]
           fecha: string
           goles_contra: number | null
@@ -991,8 +1044,9 @@ export type Database = {
         Insert: {
           academia_id: string
           actualizado_en?: string
+          categoria_id?: string | null
           creado_en?: string
-          equipo_id: string
+          equipo_id?: string | null
           estado?: Database["public"]["Enums"]["estado_sesion"]
           fecha: string
           goles_contra?: number | null
@@ -1010,8 +1064,9 @@ export type Database = {
         Update: {
           academia_id?: string
           actualizado_en?: string
+          categoria_id?: string | null
           creado_en?: string
-          equipo_id?: string
+          equipo_id?: string | null
           estado?: Database["public"]["Enums"]["estado_sesion"]
           fecha?: string
           goles_contra?: number | null
@@ -1033,6 +1088,34 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "academias"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sesiones_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "categorias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sesiones_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "v_jugadores"
+            referencedColumns: ["categoria_id"]
+          },
+          {
+            foreignKeyName: "sesiones_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "v_jugadores"
+            referencedColumns: ["categoria_por_edad_id"]
+          },
+          {
+            foreignKeyName: "sesiones_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "v_ranking_equipo"
+            referencedColumns: ["categoria_id"]
           },
           {
             foreignKeyName: "sesiones_equipo_id_fkey"
@@ -1302,6 +1385,8 @@ export type Database = {
           edad_real: number | null
           entrenador_id: string | null
           equipo: string | null
+          equipo_categoria: string | null
+          equipo_categoria_distinta: boolean | null
           equipo_id: string | null
           estado: Database["public"]["Enums"]["estado_jugador"] | null
           fecha_ingreso: string | null
@@ -1315,6 +1400,7 @@ export type Database = {
           nombres: string | null
           numero_camiseta: number | null
           posicion: string | null
+          sin_equipo: boolean | null
           sin_inscribir: boolean | null
           temporada: string | null
           temporada_id: string | null
@@ -1340,6 +1426,8 @@ export type Database = {
         Row: {
           ausentes: number | null
           categoria: string | null
+          categoria_color: string | null
+          categoria_id: string | null
           codigo: string | null
           entrenamientos: number | null
           equipo: string | null
@@ -1407,6 +1495,7 @@ export type Database = {
       edad_real: { Args: { fecha_nac: string }; Returns: number }
       es_admin: { Args: never; Returns: boolean }
       es_director: { Args: never; Returns: boolean }
+      es_mi_categoria: { Args: { p_categoria: string }; Returns: boolean }
       es_mi_equipo: { Args: { p_equipo: string }; Returns: boolean }
       es_mi_hijo: { Args: { p_jugador: string }; Returns: boolean }
       es_mi_jugador: { Args: { p_jugador: string }; Returns: boolean }
@@ -1467,12 +1556,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1496,11 +1585,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1521,11 +1610,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1546,11 +1635,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1563,11 +1652,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1602,4 +1691,3 @@ export const Constants = {
     },
   },
 } as const
-
