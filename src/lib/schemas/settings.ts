@@ -14,6 +14,11 @@ const checkbox = z
   .union([z.literal("on"), z.literal("")])
   .optional()
   .transform((v) => v === "on");
+const optionalUuid = z
+  .string()
+  .trim()
+  .optional()
+  .transform((v) => (v && v.length > 10 ? v : null));
 
 // ── Categories ─────────────────────────────────────────────────────────────
 
@@ -44,6 +49,8 @@ export const categorySchema = z
       .max(120, "tooLong")
       .optional()
       .transform((v) => (v ? v : null)),
+    entrenador_id: optionalUuid,
+    auxiliar_id: optionalUuid,
     activa: checkbox,
   })
   .refine((v) => v.edad_max >= v.edad_min, {

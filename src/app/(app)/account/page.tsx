@@ -1,8 +1,8 @@
 import { getTranslations } from "next-intl/server";
-import { LogOut } from "lucide-react";
 
 import { signOut } from "@/app/login/actions";
 import { AccountPreferences } from "@/components/app/account-preferences";
+import { SignOutButton } from "@/components/app/sign-out-button";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardTitle } from "@/components/ui/card";
@@ -72,13 +72,7 @@ export default async function AccountPage() {
 
       <div className="border-t border-line pt-4">
         <form action={signOut}>
-          <button
-            type="submit"
-            className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted transition-colors hover:bg-danger-bg hover:text-danger"
-          >
-            <LogOut className="size-4" strokeWidth={1.7} />
-            {th("signOut")}
-          </button>
+          <SignOutButton label={th("signOut")} />
         </form>
       </div>
     </div>

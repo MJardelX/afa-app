@@ -170,11 +170,13 @@ export type Database = {
         Row: {
           academia_id: string
           activa: boolean
+          auxiliar_id: string | null
           color: string
           creado_en: string
           dias_entreno: string[] | null
           edad_max: number
           edad_min: number
+          entrenador_id: string | null
           hora_entreno: string | null
           id: string
           lugar_entreno: string | null
@@ -184,11 +186,13 @@ export type Database = {
         Insert: {
           academia_id: string
           activa?: boolean
+          auxiliar_id?: string | null
           color?: string
           creado_en?: string
           dias_entreno?: string[] | null
           edad_max: number
           edad_min: number
+          entrenador_id?: string | null
           hora_entreno?: string | null
           id?: string
           lugar_entreno?: string | null
@@ -198,11 +202,13 @@ export type Database = {
         Update: {
           academia_id?: string
           activa?: boolean
+          auxiliar_id?: string | null
           color?: string
           creado_en?: string
           dias_entreno?: string[] | null
           edad_max?: number
           edad_min?: number
+          entrenador_id?: string | null
           hora_entreno?: string | null
           id?: string
           lugar_entreno?: string | null
@@ -215,6 +221,20 @@ export type Database = {
             columns: ["academia_id"]
             isOneToOne: false
             referencedRelation: "academias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "categorias_auxiliar_id_fkey"
+            columns: ["auxiliar_id"]
+            isOneToOne: false
+            referencedRelation: "perfiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "categorias_entrenador_id_fkey"
+            columns: ["entrenador_id"]
+            isOneToOne: false
+            referencedRelation: "perfiles"
             referencedColumns: ["id"]
           },
         ]

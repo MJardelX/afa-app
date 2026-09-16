@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState, useSyncExternalStore, useTransition } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { useLocale, useTranslations } from "next-intl";
 import {
   Award,
@@ -42,7 +42,7 @@ const DRAG_THRESHOLD = 6;
 
 /** The mobile day view's visible time window. */
 const DAY_START_HOUR = 8;
-const DAY_END_HOUR = 18;
+const DAY_END_HOUR = 20;
 const PX_PER_HOUR = 56;
 
 /**

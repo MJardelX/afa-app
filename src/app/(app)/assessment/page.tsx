@@ -1,14 +1,13 @@
 import { getTranslations } from "next-intl/server";
 import { ClipboardList } from "lucide-react";
 
+import { CategoriaEvalCard } from "@/components/assessment/categoria-eval-card";
 import { PeriodSelect } from "@/components/assessment/period-select";
-import { TeamEvalCard } from "@/components/assessment/team-eval-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
-import { listCalendarTeams, type CalendarTeam } from "@/server/attendance";
-import { listTeamEvaluationCounts } from "@/server/evaluation";
-import { activeSeason, currentProfile, isAdmin } from "@/server/players";
-import { listPeriods } from "@/server/settings";
+import { canEvaluatePlayer, listCategoriaEvaluationCounts } from "@/server/evaluation";
+import { activeSeason, currentProfile } from "@/server/players";
+import { listCategories, listPeriods } from "@/server/settings";
 
 export async function generateMetadata() {
   const t = await getTranslations("evaluation");
@@ -54,37 +53,20 @@ export default async function AssessmentPage({
     periods.find((p) => !p.cerrado) ??
     periods[periods.length - 1];
 
-  const teams = await listCalendarTeams();
-  const admin = isAdmin(profile?.rol);
-  const myTeams = admin
-    ? teams
-    : teams.filter(
-        (tm) => tm.entrenadorId === profile?.id || tm.auxiliarId === profile?.id,
-      );
+  // Any coach/director/coordinador can evaluate any training group — same
+  // rule as who can run its training sessions or take its attendance.
+  const allCategories = await listCategories();
+  const categories = canEvaluatePlayer(profile)
+    ? allCategories.filter((c) => c.activa)
+    : [];
 
   const counts = profile
-    ? await listTeamEvaluationCounts(
-        myTeams.map((tm) => tm.id),
+    ? await listCategoriaEvaluationCounts(
+        categories.map((c) => c.id),
         selected.id,
         profile.id,
       )
     : new Map();
-
-  const groups = new Map<
-    string,
-    { categoriaId: string; categoria: string; color: string; teams: CalendarTeam[] }
-  >();
-  for (const tm of myTeams) {
-    if (!groups.has(tm.categoriaId)) {
-      groups.set(tm.categoriaId, {
-        categoriaId: tm.categoriaId,
-        categoria: tm.categoria,
-        color: tm.color,
-        teams: [],
-      });
-    }
-    groups.get(tm.categoriaId)!.teams.push(tm);
-  }
 
   return (
     <div className="space-y-6">
@@ -94,31 +76,17 @@ export default async function AssessmentPage({
         selectedId={selected.id}
       />
 
-      {myTeams.length === 0 ? (
+      {categories.length === 0 ? (
         <EmptyState icon={<ClipboardList strokeWidth={1.5} />} title={t("teamsEmpty")} />
       ) : (
-        <div className="space-y-8">
-          {[...groups.values()].map((g) => (
-            <section key={g.categoriaId} className="space-y-3">
-              <h2 className="flex items-center gap-1.5 text-sm font-semibold text-muted">
-                <span
-                  aria-hidden
-                  className="size-2.5 rounded-full"
-                  style={{ backgroundColor: g.color }}
-                />
-                {g.categoria}
-              </h2>
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-4">
-                {g.teams.map((tm) => (
-                  <TeamEvalCard
-                    key={tm.id}
-                    team={tm}
-                    periodId={selected.id}
-                    summary={counts.get(tm.id)}
-                  />
-                ))}
-              </div>
-            </section>
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-4">
+          {categories.map((c) => (
+            <CategoriaEvalCard
+              key={c.id}
+              categoria={{ id: c.id, nombre: c.nombre, color: c.color }}
+              periodId={selected.id}
+              summary={counts.get(c.id)}
+            />
           ))}
         </div>
       )}

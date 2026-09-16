@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/server";
-import { activeSeason } from "@/server/players";
 
 type Row<T> = T extends (infer U)[] ? U : T;
 
@@ -9,29 +8,15 @@ function one<T>(v: T | T[] | null): Row<T> | null {
   return (v ?? null) as Row<T> | null;
 }
 
-/** Whether `profile` coaches the team(s) `jugadorId` is actively enrolled in. */
-export async function canEvaluatePlayer(
-  jugadorId: string,
-  profile: { id: string; rol: string } | null,
-): Promise<boolean> {
+/**
+ * Whether `profile` may evaluate players at all. Any coach can run training
+ * or take attendance for any training group, so evaluation isn't scoped to
+ * a specific group/team assignment either — matches the `evaluacion_lectura`/
+ * `evaluacion_escritura` RLS policies, which are the actual enforcement.
+ */
+export function canEvaluatePlayer(profile: { rol: string } | null): boolean {
   if (!profile) return false;
-  if (profile.rol === "director" || profile.rol === "coordinador") return true;
-
-  const season = await activeSeason();
-  if (!season) return false;
-
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("inscripciones")
-    .select("equipos(entrenador_id, auxiliar_id)")
-    .eq("jugador_id", jugadorId)
-    .eq("temporada_id", season.id)
-    .eq("estado", "activa");
-
-  return (data ?? []).some((r) => {
-    const eq = one(r.equipos);
-    return !!eq && (eq.entrenador_id === profile.id || eq.auxiliar_id === profile.id);
-  });
+  return profile.rol === "director" || profile.rol === "coordinador" || profile.rol === "entrenador";
 }
 
 export type EvalCriterion = {
@@ -67,33 +52,33 @@ export async function listActiveCriteria(): Promise<EvalCriterion[]> {
   }));
 }
 
-export type TeamEvalSummary = { finalizadas: number; total: number };
+export type CategoriaEvalSummary = { finalizadas: number; total: number };
 
-/** Roster size + how many this evaluator has finalized, per team, for a period. */
-export async function listTeamEvaluationCounts(
-  teamIds: string[],
+/** Roster size + how many this evaluator has finalized, per training group, for a period. */
+export async function listCategoriaEvaluationCounts(
+  categoriaIds: string[],
   periodoId: string,
   evaluadorId: string,
-): Promise<Map<string, TeamEvalSummary>> {
-  const out = new Map<string, TeamEvalSummary>(
-    teamIds.map((id) => [id, { finalizadas: 0, total: 0 }]),
+): Promise<Map<string, CategoriaEvalSummary>> {
+  const out = new Map<string, CategoriaEvalSummary>(
+    categoriaIds.map((id) => [id, { finalizadas: 0, total: 0 }]),
   );
-  if (!teamIds.length) return out;
+  if (!categoriaIds.length) return out;
 
   const supabase = await createClient();
   const { data: inscripciones } = await supabase
     .from("inscripciones")
-    .select("jugador_id, equipo_id")
-    .in("equipo_id", teamIds)
+    .select("jugador_id, categoria_id")
+    .in("categoria_id", categoriaIds)
     .eq("estado", "activa");
 
-  const teamByPlayer = new Map<string, string>();
+  const categoriaByPlayer = new Map<string, string>();
   for (const r of inscripciones ?? []) {
-    if (!r.equipo_id) continue;
-    out.get(r.equipo_id)!.total += 1;
-    teamByPlayer.set(r.jugador_id, r.equipo_id);
+    if (!r.categoria_id) continue;
+    out.get(r.categoria_id)!.total += 1;
+    categoriaByPlayer.set(r.jugador_id, r.categoria_id);
   }
-  if (!teamByPlayer.size) return out;
+  if (!categoriaByPlayer.size) return out;
 
   const { data: evals } = await supabase
     .from("evaluaciones")
@@ -101,11 +86,11 @@ export async function listTeamEvaluationCounts(
     .eq("periodo_id", periodoId)
     .eq("evaluador_id", evaluadorId)
     .eq("estado", "finalizada")
-    .in("jugador_id", [...teamByPlayer.keys()]);
+    .in("jugador_id", [...categoriaByPlayer.keys()]);
 
   for (const e of evals ?? []) {
-    const teamId = teamByPlayer.get(e.jugador_id);
-    if (teamId) out.get(teamId)!.finalizadas += 1;
+    const categoriaId = categoriaByPlayer.get(e.jugador_id);
+    if (categoriaId) out.get(categoriaId)!.finalizadas += 1;
   }
   return out;
 }
@@ -115,30 +100,34 @@ export type PlayerEvalStatus = {
   nombres: string;
   apellidos: string;
   codigo: string;
+  equipo: string | null;
   estado: "borrador" | "finalizada" | null;
 };
 
-/** A team's active roster with this evaluator's status per player for a period. */
-export async function getTeamEvaluationRoster(
-  teamId: string,
+/** A training group's active roster (whether or not each player has a team
+ *  yet) with this evaluator's status per player for a period. */
+export async function getCategoriaEvaluationRoster(
+  categoriaId: string,
   periodoId: string,
   evaluadorId: string,
 ): Promise<PlayerEvalStatus[]> {
   const supabase = await createClient();
   const { data: inscripciones } = await supabase
     .from("inscripciones")
-    .select("jugador_id, jugadores(nombres, apellidos, codigo)")
-    .eq("equipo_id", teamId)
+    .select("jugador_id, jugadores(nombres, apellidos, codigo), equipos(nombre)")
+    .eq("categoria_id", categoriaId)
     .eq("estado", "activa")
     .order("jugador_id");
 
   const players = (inscripciones ?? []).map((r) => {
     const j = one(r.jugadores);
+    const eq = one(r.equipos);
     return {
       jugadorId: r.jugador_id,
       nombres: j?.nombres ?? "",
       apellidos: j?.apellidos ?? "",
       codigo: j?.codigo ?? "",
+      equipo: eq?.nombre ?? null,
     };
   });
   if (!players.length) return [];

@@ -11,6 +11,7 @@ import { buttonClasses } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
 import { ConfirmButton } from "@/components/ui/confirm-button";
 import { Detail, DetailList } from "@/components/ui/detail-list";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { formatDate } from "@/lib/format";
 
 const TYPE_KEY = {
@@ -157,9 +158,9 @@ function StatusButton({
     <form action={cambiarEstadoSesion}>
       <input type="hidden" name="id" value={id} />
       <input type="hidden" name="estado" value={estado} />
-      <button type="submit" className={buttonClasses(variant, "sm")}>
+      <SubmitButton variant={variant} size="sm">
         {children}
-      </button>
+      </SubmitButton>
     </form>
   );
 }

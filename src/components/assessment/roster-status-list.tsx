@@ -12,11 +12,11 @@ const STATUS_TONE: Record<string, BadgeTone> = {
 };
 
 export async function RosterStatusList({
-  teamId,
+  categoriaId,
   periodId,
   roster,
 }: {
-  teamId: string;
+  categoriaId: string;
   periodId: string;
   roster: PlayerEvalStatus[];
 }) {
@@ -50,6 +50,7 @@ export async function RosterStatusList({
                     <span className="block truncate font-medium">{name}</span>
                     <span className="block truncate text-xs text-faint">
                       {p.codigo}
+                      {p.equipo ? ` · ${p.equipo}` : ""}
                     </span>
                   </span>
                 </div>
@@ -65,7 +66,7 @@ export async function RosterStatusList({
               </Td>
               <Td align="right">
                 <Link
-                  href={`/assessment/${teamId}/${p.jugadorId}?period=${periodId}`}
+                  href={`/assessment/${categoriaId}/${p.jugadorId}?period=${periodId}`}
                   className="text-xs font-medium text-brand-legible hover:underline"
                 >
                   {p.estado ? t("review") : t("evaluate")}

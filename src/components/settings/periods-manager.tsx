@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { useLocale, useTranslations } from "next-intl";
 import { Lock, Pencil, Plus, Trash2, Unlock } from "lucide-react";
 

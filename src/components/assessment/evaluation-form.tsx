@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
+import { LoaderCircle } from "lucide-react";
 
 import {
   finalizarEvaluacion,
@@ -115,8 +116,9 @@ export function EvaluationForm({
             type="button"
             onClick={handleReopen}
             disabled={saving === "reopen"}
-            className="font-medium underline underline-offset-2 disabled:opacity-60"
+            className="inline-flex items-center gap-1.5 font-medium underline underline-offset-2 disabled:opacity-60"
           >
+            {saving === "reopen" && <LoaderCircle className="size-3.5 animate-spin" />}
             {saving === "reopen" ? tc("saving") : t("reopen")}
           </button>
         </div>
@@ -180,6 +182,7 @@ export function EvaluationForm({
                 disabled={!!saving}
                 className={buttonClasses("secondary", "sm")}
               >
+                {saving === "draft" && <LoaderCircle className="size-3.5 animate-spin" />}
                 {saving === "draft" ? tc("saving") : t("saveDraft")}
               </button>
               <button
@@ -188,6 +191,7 @@ export function EvaluationForm({
                 disabled={!!saving}
                 className={buttonClasses("primary", "sm")}
               >
+                {saving === "finalize" && <LoaderCircle className="size-3.5 animate-spin" />}
                 {saving === "finalize" ? tc("saving") : t("saveFinalize")}
               </button>
             </div>

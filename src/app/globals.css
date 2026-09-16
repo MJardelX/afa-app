@@ -347,10 +347,9 @@ h3 {
   box-shadow: none;
 }
 
-/* Wizard: the stepper rail and the action bar are sticky over scrolling form
-   content, so they stay solid + bordered like every other panel, with just a
-   soft lift so content reads clearly as it passes beneath. The rail's shadow
-   falls down onto the form; the action bar's falls UP. */
+/* Wizard: the stepper rail and the action bar sit in normal flow around the
+   form (not sticky), styled as solid + bordered panels with a soft lift.
+   The rail's shadow falls down onto the form; the action bar's falls UP. */
 .wizard-rail,
 .wizard-actions {
   background: var(--surface);
