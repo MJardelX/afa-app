@@ -138,9 +138,14 @@ export async function crearJugadorCompleto(
   if (!guardian.success) {
     Object.assign(errs, await fieldErrors(guardian.error.issues));
   } else if (!guardian.data.g_tutor_id) {
-    // Creating a new tutor: name is required too.
-    if (!guardian.data.g_nombres) errs.g_nombres = tf("required");
-    if (!guardian.data.g_apellidos) errs.g_apellidos = tf("required");
+    // Guardian is optional: leave dpi/nombres/apellidos all blank to skip it.
+    // Start filling in any one of them and the trio becomes required together.
+    const g = guardian.data;
+    if (g.g_dpi || g.g_nombres || g.g_apellidos) {
+      if (!g.g_dpi) errs.g_dpi = tf("required");
+      if (!g.g_nombres) errs.g_nombres = tf("required");
+      if (!g.g_apellidos) errs.g_apellidos = tf("required");
+    }
   }
   if (!enroll.success) Object.assign(errs, await fieldErrors(enroll.error.issues));
   if (!parsed.success || !guardian.success || !enroll.success || Object.keys(errs).length) {

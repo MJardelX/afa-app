@@ -1,6 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useFormStatus } from "react-dom";
+import { LoaderCircle } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -29,17 +31,23 @@ export function ConfirmButton({
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const { pending } = useFormStatus();
 
   return (
     <div ref={ref} className="relative inline-block">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className={className}
+        disabled={pending}
+        className={cn(className, pending && "opacity-60")}
         title={label}
         aria-label={label}
       >
-        {children}
+        {pending ? (
+          <LoaderCircle className="size-4 animate-spin" />
+        ) : (
+          children
+        )}
       </button>
 
       {open && (
@@ -63,11 +71,14 @@ export function ConfirmButton({
               </button>
               <button
                 type="submit"
+                disabled={pending}
+                onClick={() => setOpen(false)}
                 className={cn(
-                  "rounded-lg px-2.5 py-1.5 text-sm font-medium text-brand-fg",
+                  "inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-brand-fg disabled:opacity-60",
                   tone === "danger" ? "bg-danger" : "bg-brand hover:bg-brand-hover",
                 )}
               >
+                {pending && <LoaderCircle className="size-3.5 animate-spin" />}
                 {confirmLabel}
               </button>
             </div>

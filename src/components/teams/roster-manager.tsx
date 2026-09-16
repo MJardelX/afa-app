@@ -42,10 +42,12 @@ export type RosterEntry = {
 export function RosterManager({
   teamId,
   teamCategoryId,
+  teamEdadMin,
   roster,
 }: {
   teamId: string;
   teamCategoryId: string;
+  teamEdadMin: number | null;
   roster: RosterEntry[];
 }) {
   const t = useTranslations("teams");
@@ -67,6 +69,7 @@ export function RosterManager({
         <EnrollBox
           teamId={teamId}
           teamCategoryId={teamCategoryId}
+          teamEdadMin={teamEdadMin}
           onDone={() => setAdding(false)}
         />
       ) : (
@@ -221,10 +224,12 @@ function EditEnrollmentForm({
 function EnrollBox({
   teamId,
   teamCategoryId,
+  teamEdadMin,
   onDone,
 }: {
   teamId: string;
   teamCategoryId: string;
+  teamEdadMin: number | null;
   onDone: () => void;
 }) {
   const t = useTranslations("teams");
@@ -262,6 +267,14 @@ function EnrollBox({
 
   const outOfCategory =
     picked != null && picked.categoriaPorEdadId !== teamCategoryId;
+  // The team is a younger bracket than the player's real (by-age) category —
+  // the app only allows moving up, never down (tg_inscripcion_equipo_categoria
+  // enforces this at the DB level too, so this is a pre-submit UX guard).
+  const belowAge =
+    outOfCategory &&
+    picked!.categoriaPorEdadEdadMin != null &&
+    teamEdadMin != null &&
+    teamEdadMin < picked!.categoriaPorEdadEdadMin;
 
   return (
     <form
@@ -294,10 +307,16 @@ function EnrollBox({
               {t("transferConfirm", { team: picked.currentTeam })}
             </p>
           )}
-          {outOfCategory && (
-            <p className="text-xs text-muted">
-              {t("belongsIn", { category: picked.categoriaPorEdad ?? "—" })}
+          {belowAge ? (
+            <p className="rounded-lg bg-danger-bg px-2.5 py-1.5 text-xs font-medium text-danger">
+              {t("teamBelowAgeWarning", { category: picked.categoriaPorEdad ?? "—" })}
             </p>
+          ) : (
+            outOfCategory && (
+              <p className="text-xs text-muted">
+                {t("belongsIn", { category: picked.categoriaPorEdad ?? "—" })}
+              </p>
+            )
           )}
         </div>
       ) : (
@@ -381,7 +400,7 @@ function EnrollBox({
         >
           {tc("cancel")}
         </button>
-        <SubmitButton size="sm" pendingLabel={tc("saving")}>
+        <SubmitButton size="sm" pendingLabel={tc("saving")} disabled={belowAge}>
           {picked?.currentTeam ? t("transferBtn") : t("enroll")}
         </SubmitButton>
       </div>

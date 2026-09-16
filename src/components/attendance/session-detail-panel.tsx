@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Ban, CircleCheck, Pencil, RotateCcw, PauseCircle, Trash2 } from "lucide-react";
+import { Ban, CircleCheck, Pencil, RotateCcw } from "lucide-react";
 
-import { cambiarEstadoSesion, eliminarSesion } from "@/app/(app)/attendance/actions";
+import { cambiarEstadoSesion } from "@/app/(app)/attendance/actions";
 import { SessionForm, type SessionFormData } from "@/components/attendance/session-form";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { buttonClasses } from "@/components/ui/button";
@@ -33,6 +33,10 @@ const STATUS_TONE: Record<string, BadgeTone> = {
   suspendida: "warn",
   cancelada: "danger",
 };
+
+/** Same pill shape/size as the other action buttons, quiet until hovered. */
+const dangerActionClass =
+  "inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-[0.8rem] font-medium text-muted ring-1 ring-inset ring-line transition-colors hover:bg-danger-bg hover:text-danger hover:ring-danger/30";
 
 export function SessionDetailPanel({
   session,
@@ -105,16 +109,10 @@ export function SessionDetailPanel({
           </button>
 
           {session.estado === "programada" && (
-            <>
-              <StatusButton id={session.id} estado="realizada" variant="primary">
-                <CircleCheck className="size-3.5" />
-                {t("close")}
-              </StatusButton>
-              <StatusButton id={session.id} estado="suspendida" variant="ghost">
-                <PauseCircle className="size-3.5" />
-                {t("suspend")}
-              </StatusButton>
-            </>
+            <StatusButton id={session.id} estado="realizada" variant="primary">
+              <CircleCheck className="size-3.5" />
+              {t("close")}
+            </StatusButton>
           )}
           {session.estado !== "programada" && (
             <StatusButton id={session.id} estado="programada" variant="secondary">
@@ -122,34 +120,22 @@ export function SessionDetailPanel({
               {t("reopen")}
             </StatusButton>
           )}
-          {(session.estado === "programada" || session.estado === "suspendida") && (
-            <form action={cambiarEstadoSesion}>
+
+          {session.estado === "programada" && (
+            <form action={cambiarEstadoSesion} className="ml-auto">
               <input type="hidden" name="id" value={session.id} />
               <input type="hidden" name="estado" value="cancelada" />
               <ConfirmButton
                 question={t("cancelSessionConfirm")}
                 confirmLabel={t("cancelSession")}
                 cancelLabel={tc("cancel")}
-                className="inline-flex items-center gap-1.5 text-xs text-muted hover:text-danger"
+                className={dangerActionClass}
               >
                 <Ban className="size-3.5" />
                 {t("cancelSession")}
               </ConfirmButton>
             </form>
           )}
-
-          <form action={eliminarSesion} className="ml-auto">
-            <input type="hidden" name="id" value={session.id} />
-            <ConfirmButton
-              question={t("deleteConfirm")}
-              confirmLabel={t("delete")}
-              cancelLabel={tc("cancel")}
-              className="inline-flex items-center gap-1.5 text-xs text-muted hover:text-danger"
-            >
-              <Trash2 className="size-3.5" />
-              {t("delete")}
-            </ConfirmButton>
-          </form>
         </div>
       )}
     </Card>
@@ -163,7 +149,7 @@ function StatusButton({
   children,
 }: {
   id: string;
-  estado: "programada" | "realizada" | "suspendida";
+  estado: "programada" | "realizada";
   variant: "primary" | "secondary" | "ghost";
   children: React.ReactNode;
 }) {

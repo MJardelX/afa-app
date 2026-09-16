@@ -151,6 +151,7 @@ export default async function TeamRosterPage({
             <RosterManager
               teamId={id}
               teamCategoryId={team.categoria_id}
+              teamEdadMin={team.edadMin}
               roster={roster.map((r) => ({
                 inscripcionId: r.inscripcionId,
                 jugadorId: r.jugadorId,

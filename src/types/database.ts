@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       academias: {
@@ -1377,6 +1352,7 @@ export type Database = {
           categoria: string | null
           categoria_id: string | null
           categoria_por_edad: string | null
+          categoria_por_edad_edad_min: number | null
           categoria_por_edad_id: string | null
           codigo: string | null
           colegio: string | null
@@ -1388,6 +1364,7 @@ export type Database = {
           equipo_categoria: string | null
           equipo_categoria_distinta: boolean | null
           equipo_id: string | null
+          equipo_por_debajo_de_edad: boolean | null
           estado: Database["public"]["Enums"]["estado_jugador"] | null
           fecha_ingreso: string | null
           fecha_nacimiento: string | null
@@ -1666,9 +1643,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       dimension_criterio: ["tecnica", "tactica", "fisica", "actitudinal"],

@@ -50,6 +50,8 @@ export async function errorMessage(err: unknown): Promise<string> {
   // Matches the Spanish text raised by fn_validar_asistencia (DB messages
   // stay Spanish — data-layer contract).
   if (haystack.includes("no está inscrito")) return t("notEnrolled");
+  // Matches fn_validar_equipo_categoria: team below the player's real category.
+  if (haystack.includes("solo puede subir de categoría")) return t("teamBelowAge");
 
   return t("generic");
 }

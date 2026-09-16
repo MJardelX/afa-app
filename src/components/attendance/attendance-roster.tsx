@@ -172,6 +172,21 @@ export function AttendanceRoster({
         )}
       </div>
 
+      {/* Icon legend — the per-row buttons are icon-only, and on touch devices
+          there's no hover to reveal the title/aria-label, so spell it out once
+          here instead of leaving mobile users guessing. */}
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg bg-surface-2/60 px-2.5 py-1.5 text-[0.7rem] text-muted">
+        {STATES.map((s) => {
+          const Icon = STATE_ICON[s];
+          return (
+            <span key={s} className="inline-flex items-center gap-1">
+              <Icon className="size-3.5" />
+              {t(STATE_LABEL_KEY[s])}
+            </span>
+          );
+        })}
+      </div>
+
       <ul className="divide-y divide-line">
         {roster.map((p) => {
           const mark = marks[p.jugadorId] ?? { estado: null, minutos: "", goles: "", asistencias: "" };
