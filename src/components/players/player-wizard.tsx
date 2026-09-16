@@ -171,8 +171,13 @@ export function PlayerWizard({
           if (!out[k]) out[k] = tf.has(i.message) ? tf(i.message) : tf("required");
         }
       } else if (!r.data.g_tutor_id) {
-        if (!r.data.g_nombres) out.g_nombres = tf("required");
-        if (!r.data.g_apellidos) out.g_apellidos = tf("required");
+        // Guardian is optional: blank dpi/nombres/apellidos just skips it.
+        // Starting to fill in any one of them requires the trio together.
+        if (r.data.g_dpi || r.data.g_nombres || r.data.g_apellidos) {
+          if (!r.data.g_dpi) out.g_dpi = tf("required");
+          if (!r.data.g_nombres) out.g_nombres = tf("required");
+          if (!r.data.g_apellidos) out.g_apellidos = tf("required");
+        }
       }
     }
     if (n === 4) {

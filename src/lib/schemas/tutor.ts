@@ -34,9 +34,12 @@ export const tutorSchema = z.object({
 export type TutorInput = z.infer<typeof tutorSchema>;
 
 /**
- * The primary guardian captured inline on the player create form. Required —
- * a minor needs a responsible adult on file. The DPI is the key: if it already
- * matches a tutor the form links to it and skips the name fields.
+ * The primary guardian captured inline on the player create form. Optional —
+ * some families don't have one on hand yet at signup. The DPI is the key: if
+ * it already matches a tutor the form links to it and skips the name fields.
+ * Leave everything blank to skip the guardian entirely; start filling in any
+ * of dpi/nombres/apellidos and the trio becomes required together (see the
+ * "started" check in crearJugadorCompleto and the wizard's validateStep(2)).
  */
 export const guardianSchema = z.object({
   g_tutor_id: z
@@ -44,7 +47,7 @@ export const guardianSchema = z.object({
     .trim()
     .optional()
     .transform((v) => (v ? v : null)),
-  g_dpi: trimmed.min(5, "required").max(30, "tooLong"),
+  g_dpi: trimmed.max(30, "tooLong").optional().transform((v) => v ?? ""),
   g_parentesco: relationshipSchema.default("encargado"),
   g_nombres: trimmed.max(120, "tooLong").optional().transform((v) => v ?? ""),
   g_apellidos: trimmed.max(120, "tooLong").optional().transform((v) => v ?? ""),

@@ -116,15 +116,29 @@ export async function cambiarEstadoCategoria(formData: FormData) {
   revalidatePath("/", "layout");
 }
 
-export async function eliminarCategoria(formData: FormData) {
+export async function eliminarCategoria(
+  _prev: SettingsState,
+  formData: FormData,
+): Promise<SettingsState> {
+  const ts = await getTranslations("settings");
   const profile = await requireAdmin();
-  if (!profile) return;
+  if (!profile) return { error: ts("adminOnly") };
   const id = String(formData.get("id") ?? "");
-  if (!id) return;
+  if (!id) return { error: ts("adminOnly") };
 
   const supabase = await createClient();
-  await supabase.from("categorias").delete().eq("id", id);
+  const { error } = await supabase.from("categorias").delete().eq("id", id);
+  if (error) {
+    return {
+      error:
+        error.code === "23503"
+          ? ts("catDeleteBlocked")
+          : await errorMessage(error),
+    };
+  }
+
   revalidatePath("/", "layout");
+  return { ok: true };
 }
 
 // ── Temporadas ─────────────────────────────────────────────────────────────

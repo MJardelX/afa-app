@@ -194,6 +194,7 @@ export type EnrollCandidate = {
   edadDeportiva: number | null;
   categoriaPorEdad: string | null;
   categoriaPorEdadId: string | null;
+  categoriaPorEdadEdadMin: number | null;
   currentTeamId: string | null;
   currentTeam: string | null;
   inscripcionId: string | null;
@@ -214,7 +215,7 @@ export async function searchEnrollCandidates(
   const { data } = await supabase
     .from("v_jugadores")
     .select(
-      "id, nombre_completo, codigo, edad_deportiva, categoria_por_edad, categoria_por_edad_id, equipo_id, equipo, inscripcion_id",
+      "id, nombre_completo, codigo, edad_deportiva, categoria_por_edad, categoria_por_edad_id, categoria_por_edad_edad_min, equipo_id, equipo, inscripcion_id",
     )
     .or(`nombres.ilike.%${t}%,apellidos.ilike.%${t}%,codigo.ilike.%${t}%`)
     .eq("estado", "activo")
@@ -229,6 +230,7 @@ export async function searchEnrollCandidates(
       edadDeportiva: p.edad_deportiva,
       categoriaPorEdad: p.categoria_por_edad,
       categoriaPorEdadId: p.categoria_por_edad_id,
+      categoriaPorEdadEdadMin: p.categoria_por_edad_edad_min,
       currentTeamId: p.equipo_id,
       currentTeam: p.equipo,
       inscripcionId: p.inscripcion_id,

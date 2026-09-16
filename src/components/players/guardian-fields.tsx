@@ -73,7 +73,7 @@ export function GuardianFields({
       <Field
         label={t("tutDpi")}
         htmlFor="g_dpi"
-        required
+        optional
         error={errors.g_dpi}
         hint={!match ? t("gDpiHint") : undefined}
       >
@@ -133,7 +133,7 @@ export function GuardianFields({
       <Field
         label={t("gFirstName")}
         htmlFor="g_nombres"
-        required={!locked}
+        optional={!locked}
         error={errors.g_nombres}
       >
         <TextInput
@@ -150,7 +150,7 @@ export function GuardianFields({
       <Field
         label={t("gLastName")}
         htmlFor="g_apellidos"
-        required={!locked}
+        optional={!locked}
         error={errors.g_apellidos}
       >
         <TextInput

@@ -44,32 +44,52 @@ export function CategoriesManager({
 }) {
   const t = useTranslations("settings");
   const [creating, setCreating] = useState(false);
+  const [showInactive, setShowInactive] = useState(false);
+
+  const inactiveCount = rows.filter((c) => !c.activa).length;
+  const visibleRows = showInactive ? rows : rows.filter((c) => c.activa);
 
   return (
     <div className="space-y-4">
-      {rows.length === 0 ? (
-        <p className="py-4 text-center text-sm text-muted">{t("catEmpty")}</p>
+      {visibleRows.length === 0 ? (
+        <p className="py-4 text-center text-sm text-muted">
+          {rows.length === 0 ? t("catEmpty") : t("catAllInactive")}
+        </p>
       ) : (
         <div className="grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-4">
-          {rows.map((c) => (
+          {visibleRows.map((c) => (
             <CategoryCard key={c.id} category={c} admin={admin} />
           ))}
         </div>
       )}
 
-      {admin &&
-        (creating ? (
-          <CategoryForm mode="create" onDone={() => setCreating(false)} />
-        ) : (
+      <div className="flex flex-wrap items-center gap-2">
+        {admin &&
+          (creating ? (
+            <CategoryForm mode="create" onDone={() => setCreating(false)} />
+          ) : (
+            <button
+              type="button"
+              onClick={() => setCreating(true)}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-fg"
+            >
+              <Plus className="size-3.5" />
+              {t("catNew")}
+            </button>
+          ))}
+
+        {inactiveCount > 0 && (
           <button
             type="button"
-            onClick={() => setCreating(true)}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-fg"
+            onClick={() => setShowInactive((v) => !v)}
+            className="text-xs font-medium text-muted underline-offset-2 hover:text-fg hover:underline"
           >
-            <Plus className="size-3.5" />
-            {t("catNew")}
+            {showInactive
+              ? t("catHideInactive")
+              : t("catShowInactive", { count: inactiveCount })}
           </button>
-        ))}
+        )}
+      </div>
     </div>
   );
 }
@@ -85,6 +105,10 @@ function CategoryCard({
   const tc = useTranslations("common");
   const [editing, setEditing] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [deleteState, deleteAction] = useActionState<SettingsState, FormData>(
+    eliminarCategoria,
+    null,
+  );
 
   if (editing) {
     return (
@@ -127,6 +151,8 @@ function CategoryCard({
         </div>
         {!category.activa && <Badge tone="neutral">{t("catInactive")}</Badge>}
       </div>
+
+      <FormBanner error={deleteState?.error} />
 
       <div>
         <Badge tone="neutral">
@@ -178,7 +204,7 @@ function CategoryCard({
               <Power className="size-4" />
             </IconAction>
           </form>
-          <form action={eliminarCategoria} className="ml-auto">
+          <form action={deleteAction} className="ml-auto">
             <input type="hidden" name="id" value={category.id} />
             <ConfirmButton
               question={t("catDeleteConfirm")}
