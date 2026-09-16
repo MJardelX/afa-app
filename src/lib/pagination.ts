@@ -1,4 +1,4 @@
-export const PAGE_SIZE = 25;
+export const PAGE_SIZE = 15;
 
 /** 1-based page from a search param, clamped to >= 1. */
 export function parsePage(value: string | string[] | undefined): number {

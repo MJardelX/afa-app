@@ -18,6 +18,7 @@ import { ConfirmButton } from "@/components/ui/confirm-button";
 import { Checkbox, Field, Select, TextInput, controlClass } from "@/components/ui/field";
 import { FormBanner } from "@/components/ui/form-banner";
 import { IconAction, iconActionClasses } from "@/components/ui/icon-action";
+import { ListPagination, usePagedList } from "@/components/ui/list-pagination";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { RELATIONSHIPS } from "@/lib/schemas/tutor";
 import { cn } from "@/lib/utils";
@@ -55,73 +56,77 @@ export function GuardiansSection({
   const t = useTranslations("players");
   const tc = useTranslations("common");
   const [adding, setAdding] = useState(false);
+  const { page, setPage, pageCount, pageItems } = usePagedList(guardians);
 
   return (
     <div className="space-y-3">
       {guardians.length === 0 ? (
         <p className="py-4 text-center text-sm text-muted">{t("tutEmpty")}</p>
       ) : (
-        <ul className="divide-y divide-line">
-          {guardians.map((g) => {
-            const tut = g.tutores;
-            return (
-              <li key={g.tutor_id} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-                <div className="min-w-0 flex-1">
-                  <Link
-                    href={`/players/tutors/${g.tutor_id}`}
-                    className="text-sm font-medium hover:text-brand-legible"
-                  >
-                    {tut ? `${tut.nombres} ${tut.apellidos}` : "—"}
-                  </Link>
-                  <p className="mt-0.5 text-xs text-muted">{tut?.telefono ?? "—"}</p>
-                  <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                    <Badge tone={g.es_contacto_principal ? "brand" : "neutral"}>
-                      {t(relKey(g.parentesco))}
-                    </Badge>
-                    {g.es_contacto_principal && (
-                      <span className="inline-flex items-center gap-1 text-[0.65rem] font-medium text-brand-legible">
-                        <Star className="size-3 fill-current" />
-                        {t("tutPrimary")}
-                      </span>
-                    )}
-                    {g.autoriza_retiro && (
-                      <span className="text-[0.65rem] text-muted">
-                        {t("tutAllowsPickup")}
-                      </span>
-                    )}
+        <>
+          <ul className="divide-y divide-line">
+            {pageItems.map((g) => {
+              const tut = g.tutores;
+              return (
+                <li key={g.tutor_id} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
+                  <div className="min-w-0 flex-1">
+                    <Link
+                      href={`/players/tutors/${g.tutor_id}`}
+                      className="text-sm font-medium hover:text-brand-legible"
+                    >
+                      {tut ? `${tut.nombres} ${tut.apellidos}` : "—"}
+                    </Link>
+                    <p className="mt-0.5 text-xs text-muted">{tut?.telefono ?? "—"}</p>
+                    <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                      <Badge tone={g.es_contacto_principal ? "brand" : "neutral"}>
+                        {t(relKey(g.parentesco))}
+                      </Badge>
+                      {g.es_contacto_principal && (
+                        <span className="inline-flex items-center gap-1 text-[0.65rem] font-medium text-brand-legible">
+                          <Star className="size-3 fill-current" />
+                          {t("tutPrimary")}
+                        </span>
+                      )}
+                      {g.autoriza_retiro && (
+                        <span className="text-[0.65rem] text-muted">
+                          {t("tutAllowsPickup")}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                {admin && (
-                  <div className="flex shrink-0 items-center gap-1">
-                    {!g.es_contacto_principal && (
-                      <form action={hacerContactoPrincipal}>
+                  {admin && (
+                    <div className="flex shrink-0 items-center gap-1">
+                      {!g.es_contacto_principal && (
+                        <form action={hacerContactoPrincipal}>
+                          <input type="hidden" name="jugador_id" value={jugadorId} />
+                          <input type="hidden" name="tutor_id" value={g.tutor_id} />
+                          <IconAction type="submit" label={t("tutSetPrimary")} tone="brand">
+                            <Star className="size-4" />
+                          </IconAction>
+                        </form>
+                      )}
+                      <form action={desvincularTutor}>
                         <input type="hidden" name="jugador_id" value={jugadorId} />
                         <input type="hidden" name="tutor_id" value={g.tutor_id} />
-                        <IconAction type="submit" label={t("tutSetPrimary")} tone="brand">
-                          <Star className="size-4" />
-                        </IconAction>
+                        <ConfirmButton
+                          question={t("tutRemoveConfirm")}
+                          confirmLabel={t("tutRemove")}
+                          cancelLabel={tc("cancel")}
+                          label={t("tutRemove")}
+                          className={iconActionClasses("danger")}
+                        >
+                          <Unlink className="size-4" />
+                        </ConfirmButton>
                       </form>
-                    )}
-                    <form action={desvincularTutor}>
-                      <input type="hidden" name="jugador_id" value={jugadorId} />
-                      <input type="hidden" name="tutor_id" value={g.tutor_id} />
-                      <ConfirmButton
-                        question={t("tutRemoveConfirm")}
-                        confirmLabel={t("tutRemove")}
-                        cancelLabel={tc("cancel")}
-                        label={t("tutRemove")}
-                        className={iconActionClasses("danger")}
-                      >
-                        <Unlink className="size-4" />
-                      </ConfirmButton>
-                    </form>
-                  </div>
-                )}
-              </li>
-            );
-          })}
-        </ul>
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+          <ListPagination page={page} pageCount={pageCount} onChange={setPage} />
+        </>
       )}
 
       {admin &&

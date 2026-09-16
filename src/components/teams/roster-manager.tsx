@@ -24,6 +24,7 @@ import { buttonClasses } from "@/components/ui/button";
 import { ConfirmButton } from "@/components/ui/confirm-button";
 import { controlClass, Field, TextInput } from "@/components/ui/field";
 import { FormBanner } from "@/components/ui/form-banner";
+import { ListPagination, usePagedList } from "@/components/ui/list-pagination";
 import { SubmitButton } from "@/components/ui/submit-button";
 import type { EnrollCandidate } from "@/server/teams";
 import { cn } from "@/lib/utils";
@@ -52,17 +53,21 @@ export function RosterManager({
 }) {
   const t = useTranslations("teams");
   const [adding, setAdding] = useState(false);
+  const { page, setPage, pageCount, pageItems } = usePagedList(roster);
 
   return (
     <div className="space-y-3">
       {roster.length === 0 ? (
         <p className="py-6 text-center text-sm text-muted">{t("rosterEmpty")}</p>
       ) : (
-        <ul className="divide-y divide-line">
-          {roster.map((r) => (
-            <RosterRow key={r.inscripcionId} teamId={teamId} entry={r} />
-          ))}
-        </ul>
+        <>
+          <ul className="divide-y divide-line">
+            {pageItems.map((r) => (
+              <RosterRow key={r.inscripcionId} teamId={teamId} entry={r} />
+            ))}
+          </ul>
+          <ListPagination page={page} pageCount={pageCount} onChange={setPage} />
+        </>
       )}
 
       {adding ? (

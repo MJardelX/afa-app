@@ -27,6 +27,7 @@ import { ConfirmButton } from "@/components/ui/confirm-button";
 import { Field, Select, TextInput } from "@/components/ui/field";
 import { FormBanner } from "@/components/ui/form-banner";
 import { IconAction, iconActionClasses } from "@/components/ui/icon-action";
+import { ListPagination, usePagedList } from "@/components/ui/list-pagination";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { monthBounds, monthParam, parseMonthParam } from "@/lib/calendar";
 import { WEEKDAYS, WEEKDAY_LABEL_KEY } from "@/lib/weekdays";
@@ -64,6 +65,7 @@ export function CategoriesManager({
 
   const inactiveCount = rows.filter((c) => !c.activa).length;
   const visibleRows = showInactive ? rows : rows.filter((c) => c.activa);
+  const { page, setPage, pageCount, pageItems } = usePagedList(visibleRows);
 
   return (
     <div className="space-y-4">
@@ -72,11 +74,14 @@ export function CategoriesManager({
           {rows.length === 0 ? t("catEmpty") : t("catAllInactive")}
         </p>
       ) : (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-4">
-          {visibleRows.map((c) => (
-            <CategoryCard key={c.id} category={c} admin={admin} staff={staff} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-4">
+            {pageItems.map((c) => (
+              <CategoryCard key={c.id} category={c} admin={admin} staff={staff} />
+            ))}
+          </div>
+          <ListPagination page={page} pageCount={pageCount} onChange={setPage} />
+        </>
       )}
 
       <div className="flex flex-wrap items-center gap-2">
