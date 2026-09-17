@@ -17,6 +17,8 @@ const pastDate = z
   .refine((v) => !Number.isNaN(Date.parse(v)), "invalidDate")
   .refine((v) => new Date(v) <= new Date(), "mustBePast");
 
+export const PLAYER_SEXES = ["masculino", "femenino"] as const;
+
 export const playerSchema = z.object({
   nombres: trimmed.min(2, "tooShort").max(120, "tooLong"),
   apellidos: trimmed.min(2, "tooShort").max(120, "tooLong"),
@@ -24,6 +26,7 @@ export const playerSchema = z.object({
     (v) => new Date(v).getFullYear() > 1990,
     "invalidDate",
   ),
+  sexo: z.enum(PLAYER_SEXES),
   lugar_nacimiento: optionalText,
   direccion: optionalText,
   fecha_ingreso: z

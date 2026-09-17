@@ -86,6 +86,7 @@ function playerFields(v: ReturnType<typeof playerSchema.parse>) {
     nombres: v.nombres,
     apellidos: v.apellidos,
     fecha_nacimiento: v.fecha_nacimiento,
+    sexo: v.sexo,
     lugar_nacimiento: v.lugar_nacimiento,
     direccion: v.direccion,
     ...(v.fecha_ingreso ? { fecha_ingreso: v.fecha_ingreso } : {}),

@@ -55,12 +55,16 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
             periods-manager.tsx for the pattern). The nonce isn't strictly
             required — style-src keeps 'unsafe-inline' in both environments —
             but passing it costs nothing and matches how the boot script
-            above is nonced. */}
+            above is nonced. Uses --chart-bar rather than --brand: --brand is
+            pinned to the same hex in both themes (a text/button contrast
+            floor), which only reads ~2.7:1 against the dark canvas — under
+            the 3:1 floor for UI marks. --chart-bar already solves that same
+            problem by brightening in dark mode. */}
         <NextTopLoader
-          color="linear-gradient(90deg, var(--brand), var(--brand-hover))"
+          color="var(--chart-bar)"
           height={3}
           showSpinner={false}
-          shadow="0 0 10px var(--brand), 0 0 5px var(--brand-hover)"
+          shadow="0 0 10px var(--chart-bar), 0 0 5px var(--chart-bar)"
           nonce={nonce}
         />
         <NextIntlClientProvider>{children}</NextIntlClientProvider>

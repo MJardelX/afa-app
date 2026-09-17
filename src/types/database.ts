@@ -866,6 +866,7 @@ export type Database = {
           lugar_nacimiento: string | null
           nombres: string
           observaciones: string | null
+          sexo: string
         }
         Insert: {
           academia_id: string
@@ -887,6 +888,7 @@ export type Database = {
           lugar_nacimiento?: string | null
           nombres: string
           observaciones?: string | null
+          sexo: string
         }
         Update: {
           academia_id?: string
@@ -908,6 +910,7 @@ export type Database = {
           lugar_nacimiento?: string | null
           nombres?: string
           observaciones?: string | null
+          sexo?: string
         }
         Relationships: [
           {
@@ -1397,6 +1400,7 @@ export type Database = {
           nombres: string | null
           numero_camiseta: number | null
           posicion: string | null
+          sexo: string | null
           sin_equipo: boolean | null
           sin_inscribir: boolean | null
           temporada: string | null

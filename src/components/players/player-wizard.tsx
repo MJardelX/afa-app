@@ -15,7 +15,7 @@ import { Field, Select, Textarea, TextInput } from "@/components/ui/field";
 import { FormBanner } from "@/components/ui/form-banner";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { sportingAge } from "@/lib/format";
-import { playerSchema } from "@/lib/schemas/player";
+import { PLAYER_SEXES, playerSchema } from "@/lib/schemas/player";
 import { guardianSchema } from "@/lib/schemas/tutor";
 import { cn } from "@/lib/utils";
 
@@ -53,6 +53,7 @@ const FIELD_STEP: Record<string, number> = {
   nombres: 1,
   apellidos: 1,
   fecha_nacimiento: 1,
+  sexo: 1,
   lugar_nacimiento: 1,
   direccion: 1,
   fecha_ingreso: 1,
@@ -309,6 +310,18 @@ export function PlayerWizard({
                 invalid={!!errs.fecha_nacimiento}
                 max={today()}
               />
+            </Field>
+            <Field label={t("fSex")} htmlFor="sexo" required error={errs.sexo}>
+              <Select id="sexo" name="sexo" defaultValue="" invalid={!!errs.sexo}>
+                <option value="" disabled>
+                  {tc("choose")}
+                </option>
+                {PLAYER_SEXES.map((s) => (
+                  <option key={s} value={s}>
+                    {t(s === "masculino" ? "sexMasculino" : "sexFemenino")}
+                  </option>
+                ))}
+              </Select>
             </Field>
             <Field
               label={t("fJoinDate")}

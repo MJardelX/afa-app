@@ -145,9 +145,7 @@
     "alertLowAttendanceDetail": "{percent}% of sessions called up",
     "noCategory": "no category",
     "moduleDescSettings": "Training groups, seasons, evaluation periods and criteria.",
-    "moduleDescAudit": "Who changed what, and when.",
-    "alertNoTeam": "{name} has no team yet",
-    "alertNoTeamDetail": "{code} · registered in {category}, needs a team"
+    "moduleDescAudit": "Who changed what, and when."
   },
   "attendanceLevel": {
     "good": "Good",
@@ -248,13 +246,7 @@
     "colAges": "Age (real / sporting)",
     "colStatus": "Status",
     "filterCategory": "Category",
-    "filterStatus": "Status",
-    "filterFlag": "Show",
-    "allCategories": "All categories",
-    "allStatuses": "All statuses",
-    "flagAll": "Everyone",
-    "flagUnenrolled": "Not enrolled",
-    "flagOffCategory": "Outside category",
+    "allCategories": "All groups",
     "statusActivo": "Active",
     "statusInactivo": "Inactive",
     "statusRetirado": "Withdrawn",
@@ -266,6 +258,9 @@
     "fFirstName": "First names",
     "fLastName": "Last names",
     "fBirthDate": "Birth date",
+    "fSex": "Sex",
+    "sexMasculino": "Male",
+    "sexFemenino": "Female",
     "fBirthPlace": "Birth place",
     "fSchool": "School",
     "fGrade": "Grade",
@@ -429,7 +424,6 @@
     "wizReviewName": "Player",
     "wizReviewCategory": "Training group",
     "wizReviewTeam": "Team",
-    "flagNoTeam": "No team",
     "noTeamYet": "No team yet"
   },
   "tutors": {
@@ -714,6 +708,7 @@
     "generateCategories": "Training groups",
     "noCategories": "No training groups yet.",
     "noSchedule": "no schedule set",
+    "dayEmpty": "No sessions this day.",
     "roster": "Roster",
     "rosterEmpty": "No players to mark yet.",
     "close": "Complete",

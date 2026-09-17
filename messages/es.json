@@ -145,9 +145,7 @@
     "alertLowAttendanceDetail": "{percent}% de las sesiones convocadas",
     "noCategory": "sin categoría",
     "moduleDescSettings": "Grupos de entrenamiento, temporadas, períodos y criterios de evaluación.",
-    "moduleDescAudit": "Quién cambió qué, y cuándo.",
-    "alertNoTeam": "{name} todavía no tiene equipo",
-    "alertNoTeamDetail": "{code} · inscrito en {category}, falta asignarle equipo"
+    "moduleDescAudit": "Quién cambió qué, y cuándo."
   },
   "attendanceLevel": {
     "good": "Buena",
@@ -248,13 +246,7 @@
     "colAges": "Edad (real / deportiva)",
     "colStatus": "Estado",
     "filterCategory": "Categoría",
-    "filterStatus": "Estado",
-    "filterFlag": "Mostrar",
-    "allCategories": "Todas las categorías",
-    "allStatuses": "Todos los estados",
-    "flagAll": "Todos",
-    "flagUnenrolled": "Sin inscribir",
-    "flagOffCategory": "Fuera de categoría",
+    "allCategories": "Todos los grupos",
     "statusActivo": "Activo",
     "statusInactivo": "Inactivo",
     "statusRetirado": "Retirado",
@@ -266,6 +258,9 @@
     "fFirstName": "Nombres",
     "fLastName": "Apellidos",
     "fBirthDate": "Fecha de nacimiento",
+    "fSex": "Sexo",
+    "sexMasculino": "Masculino",
+    "sexFemenino": "Femenino",
     "fBirthPlace": "Lugar de nacimiento",
     "fSchool": "Colegio",
     "fGrade": "Grado",
@@ -429,7 +424,6 @@
     "wizReviewName": "Jugador",
     "wizReviewCategory": "Grupo de entrenamiento",
     "wizReviewTeam": "Equipo",
-    "flagNoTeam": "Sin equipo",
     "noTeamYet": "Sin equipo todavía"
   },
   "tutors": {
@@ -714,6 +708,7 @@
     "generateCategories": "Grupos de entrenamiento",
     "noCategories": "Todavía no hay grupos de entrenamiento.",
     "noSchedule": "sin horario definido",
+    "dayEmpty": "Sin sesiones este día.",
     "roster": "Lista",
     "rosterEmpty": "Todavía no hay jugadores para marcar.",
     "close": "Completar",

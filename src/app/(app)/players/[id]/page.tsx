@@ -180,6 +180,9 @@ export default async function PlayerProfilePage({
               <Detail term={t("fBirthDate")}>
                 {formatDate(player.fecha_nacimiento, locale)}
               </Detail>
+              <Detail term={t("fSex")}>
+                {t(player.sexo === "masculino" ? "sexMasculino" : "sexFemenino")}
+              </Detail>
               <Detail term={t("realAge")}>{player.edad_real}</Detail>
               <Detail term={t("sportingAgeLabel")}>
                 {player.edad_deportiva}

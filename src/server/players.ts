@@ -146,7 +146,7 @@ export async function getPlayerEditable(id: string) {
   const { data } = await supabase
     .from("jugadores")
     .select(
-      "id, codigo, nombres, apellidos, fecha_nacimiento, lugar_nacimiento, colegio, grado_escolar, direccion, fecha_ingreso, estado, observaciones, academia_id",
+      "id, codigo, nombres, apellidos, fecha_nacimiento, sexo, lugar_nacimiento, colegio, grado_escolar, direccion, fecha_ingreso, estado, observaciones, academia_id",
     )
     .eq("id", id)
     .maybeSingle();

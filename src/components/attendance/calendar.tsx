@@ -431,11 +431,20 @@ export function AttendanceCalendar({
     );
   }
 
-  /** Minutes from DAY_START_HOUR, clamped to the visible window. */
-  function minutesFromStart(hhmm: string) {
+  /** Minutes from `rangeStart`, clamped to [`rangeStart`, `rangeEnd`]. */
+  function minutesFromStart(hhmm: string, rangeStart: number, rangeEnd: number) {
     const [h, m] = hhmm.split(":").map(Number);
-    const minutes = (h - DAY_START_HOUR) * 60 + m;
-    return Math.min(Math.max(minutes, 0), (DAY_END_HOUR - DAY_START_HOUR) * 60);
+    const minutes = (h - rangeStart) * 60 + m;
+    return Math.min(Math.max(minutes, 0), (rangeEnd - rangeStart) * 60);
+  }
+
+  function hourFloat(hhmm: string) {
+    const [h, m] = hhmm.split(":").map(Number);
+    return h + m / 60;
+  }
+
+  function clampHour(h: number) {
+    return Math.min(Math.max(h, DAY_START_HOUR), DAY_END_HOUR);
   }
 
   /**
@@ -481,48 +490,71 @@ export function AttendanceCalendar({
     return positioned;
   }
 
-  /** Hour-by-hour timeline (8am–6pm) for the mobile day view — sessions land
-   *  at their actual time instead of just stacking in a list. */
+  /** Hour-by-hour timeline for the mobile day view — sessions land at their
+   *  actual time instead of just stacking in a list. A fixed 8am–8pm grid
+   *  would waste most of its height on a day whose one training runs 4–6pm,
+   *  so the grid only spans the hours this day actually uses (one hour of
+   *  padding on each side, clamped to the 8am–8pm window) — the same idea as
+   *  a calendar auto-scrolling to the day's first event, just applied to the
+   *  grid's own height instead of a scroll position. Days with nothing timed
+   *  skip the grid entirely; empty days skip the timeline altogether. */
   function renderDayTimeline(day: CalendarCell) {
     const daySessions = byDate.get(day.iso) ?? [];
     const timed = daySessions.filter((s) => s.horaInicio);
     const untimed = daySessions.filter((s) => !s.horaInicio);
-    const hours = Array.from(
-      { length: DAY_END_HOUR - DAY_START_HOUR + 1 },
-      (_, i) => DAY_START_HOUR + i,
+
+    if (daySessions.length === 0) {
+      return <p className="py-10 text-center text-sm text-muted">{t("dayEmpty")}</p>;
+    }
+
+    const untimedList = untimed.length > 0 && (
+      <div className="space-y-1 border-b border-line p-2">
+        {untimed.map((s) => {
+          const Icon = TYPE_ICON[s.tipo] ?? Dumbbell;
+          return (
+            <Link
+              key={s.id}
+              href={`/attendance/${s.id}`}
+              className={cn(
+                "flex items-center gap-1.5 truncate rounded-md border-l-2 px-2 py-1.5 text-[0.72rem] leading-tight hover:brightness-95",
+                s.estado === "cancelada" && "opacity-50 line-through",
+              )}
+              style={{ borderLeftColor: s.color, backgroundColor: `${s.color}1a` }}
+            >
+              <Icon className="size-3.5 shrink-0" style={{ color: s.color }} />
+              <span className="truncate">{sessionLabel(s)}</span>
+            </Link>
+          );
+        })}
+      </div>
     );
-    const totalHeight = (DAY_END_HOUR - DAY_START_HOUR) * PX_PER_HOUR;
+
+    if (timed.length === 0) {
+      return <div>{untimedList}</div>;
+    }
+
+    const starts = timed.map((s) => hourFloat(s.horaInicio!));
+    const ends = timed.map((s) =>
+      s.horaFin ? hourFloat(s.horaFin) : hourFloat(s.horaInicio!) + 1,
+    );
+    const rangeStart = clampHour(Math.floor(Math.min(...starts)) - 1);
+    const rangeEnd = Math.max(clampHour(Math.ceil(Math.max(...ends)) + 1), rangeStart + 1);
+    const hours = Array.from(
+      { length: rangeEnd - rangeStart + 1 },
+      (_, i) => rangeStart + i,
+    );
+    const totalHeight = (rangeEnd - rangeStart) * PX_PER_HOUR;
 
     return (
       <div>
-        {untimed.length > 0 && (
-          <div className="space-y-1 border-b border-line p-2">
-            {untimed.map((s) => {
-              const Icon = TYPE_ICON[s.tipo] ?? Dumbbell;
-              return (
-                <Link
-                  key={s.id}
-                  href={`/attendance/${s.id}`}
-                  className={cn(
-                    "flex items-center gap-1.5 truncate rounded-md border-l-2 px-2 py-1.5 text-[0.72rem] leading-tight hover:brightness-95",
-                    s.estado === "cancelada" && "opacity-50 line-through",
-                  )}
-                  style={{ borderLeftColor: s.color, backgroundColor: `${s.color}1a` }}
-                >
-                  <Icon className="size-3.5 shrink-0" style={{ color: s.color }} />
-                  <span className="truncate">{sessionLabel(s)}</span>
-                </Link>
-              );
-            })}
-          </div>
-        )}
+        {untimedList}
 
         <div className="relative" style={{ height: totalHeight }}>
           {hours.map((h) => (
             <div
               key={h}
               className="absolute inset-x-0 border-t border-line"
-              style={{ top: (h - DAY_START_HOUR) * PX_PER_HOUR }}
+              style={{ top: (h - rangeStart) * PX_PER_HOUR }}
             >
               <span className="absolute -top-2 left-1 bg-surface px-0.5 text-[0.65rem] tabular-nums text-faint">
                 {h}:00
@@ -534,10 +566,10 @@ export function AttendanceCalendar({
             {layoutOverlaps(
               timed.map((s) => ({
                 s,
-                start: minutesFromStart(s.horaInicio!),
+                start: minutesFromStart(s.horaInicio!, rangeStart, rangeEnd),
                 end: s.horaFin
-                  ? minutesFromStart(s.horaFin)
-                  : minutesFromStart(s.horaInicio!) + 60,
+                  ? minutesFromStart(s.horaFin, rangeStart, rangeEnd)
+                  : minutesFromStart(s.horaInicio!, rangeStart, rangeEnd) + 60,
               })),
             ).map(({ item: { s, start, end }, column, columns }) => {
               const Icon = TYPE_ICON[s.tipo] ?? Dumbbell;
