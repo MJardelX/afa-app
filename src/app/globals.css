@@ -291,6 +291,16 @@ body {
   background: light-dark(rgb(64 187 236 / 0.28), rgb(64 187 236 / 0.32));
 }
 
+/* The <select> popup is browser/OS-rendered and mostly opaque to CSS, but
+   evergreen browsers do honor an <option>'s own background/text color —
+   without this it falls back to a generic native widget (stark black in
+   dark mode) that clashes with the app's actual surface tones. */
+select,
+select option {
+  background-color: var(--surface);
+  color: var(--fg);
+}
+
 /* Headings read tighter at large sizes; opt out per element when needed. */
 h1,
 h2,
