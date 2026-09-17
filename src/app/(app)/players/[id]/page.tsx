@@ -18,8 +18,8 @@ import { buttonClasses } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
 import { ConfirmButton } from "@/components/ui/confirm-button";
 import { Detail, DetailList } from "@/components/ui/detail-list";
-import { FormBanner } from "@/components/ui/form-banner";
 import { InfoHint } from "@/components/ui/info-hint";
+import { SavedToast } from "@/components/ui/saved-toast";
 import { formatDate, fullName } from "@/lib/format";
 import {
   activeCategories,
@@ -45,13 +45,10 @@ export async function generateMetadata({
 
 export default async function PlayerProfilePage({
   params,
-  searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { id } = await params;
-  const saved = (await searchParams).saved === "1";
   const t = await getTranslations("players");
   const tc = await getTranslations("common");
   const locale = await getLocale();
@@ -91,7 +88,7 @@ export default async function PlayerProfilePage({
         {t("title")}
       </Link>
 
-      {saved && <FormBanner success={t("toastUpdated")} />}
+      <SavedToast message={t("toastUpdated")} />
 
       {/* Header ---------------------------------------------------------- */}
       <Card className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
@@ -179,6 +176,9 @@ export default async function PlayerProfilePage({
             <DetailList>
               <Detail term={t("fBirthDate")}>
                 {formatDate(player.fecha_nacimiento, locale)}
+              </Detail>
+              <Detail term={t("fSex")}>
+                {t(player.sexo === "masculino" ? "sexMasculino" : "sexFemenino")}
               </Detail>
               <Detail term={t("realAge")}>{player.edad_real}</Detail>
               <Detail term={t("sportingAgeLabel")}>

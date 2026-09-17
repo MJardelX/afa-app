@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { ChevronRight, Plus, UserRound, Users } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { ListPagination, usePagedList } from "@/components/ui/list-pagination";
 import type { TeamGroup } from "@/server/teams";
 import { WEEKDAY_LABEL_KEY } from "@/lib/weekdays";
 
@@ -24,6 +25,7 @@ export function TeamCategoryCard({
     .join(" · ");
   const time = group.horaEntreno?.slice(0, 5) ?? null;
   const schedule = [days, time].filter(Boolean).join("  ·  ");
+  const { page, setPage, pageCount, pageItems } = usePagedList(group.teams);
 
   return (
     <section className="flex flex-col rounded-2xl border border-line bg-surface">
@@ -52,7 +54,7 @@ export function TeamCategoryCard({
             {t("catEmpty")}
           </p>
         ) : (
-          group.teams.map((team) => (
+          pageItems.map((team) => (
             <Link
               key={team.id}
               href={`/teams/${team.id}`}
@@ -83,6 +85,12 @@ export function TeamCategoryCard({
               <ChevronRight className="size-4 shrink-0 text-faint transition-transform duration-200 ease-out-soft group-hover:translate-x-0.5 group-hover:text-muted" />
             </Link>
           ))
+        )}
+
+        {pageCount > 1 && (
+          <div className="px-4 py-2">
+            <ListPagination page={page} pageCount={pageCount} onChange={setPage} />
+          </div>
         )}
 
         {admin && (

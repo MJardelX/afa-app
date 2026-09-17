@@ -145,9 +145,7 @@
     "alertLowAttendanceDetail": "{percent}% of sessions called up",
     "noCategory": "no category",
     "moduleDescSettings": "Training groups, seasons, evaluation periods and criteria.",
-    "moduleDescAudit": "Who changed what, and when.",
-    "alertNoTeam": "{name} has no team yet",
-    "alertNoTeamDetail": "{code} · registered in {category}, needs a team"
+    "moduleDescAudit": "Who changed what, and when."
   },
   "attendanceLevel": {
     "good": "Good",
@@ -204,7 +202,8 @@
     "mustBePast": "The date can't be in the future.",
     "selectOne": "Choose an option.",
     "endBeforeStart": "The end must be after the start.",
-    "invalidColor": "Enter a valid color."
+    "invalidColor": "Enter a valid color.",
+    "invalidTime": "Enter a valid time."
   },
   "errors": {
     "generic": "The change couldn't be saved. Please try again.",
@@ -248,13 +247,7 @@
     "colAges": "Age (real / sporting)",
     "colStatus": "Status",
     "filterCategory": "Category",
-    "filterStatus": "Status",
-    "filterFlag": "Show",
-    "allCategories": "All categories",
-    "allStatuses": "All statuses",
-    "flagAll": "Everyone",
-    "flagUnenrolled": "Not enrolled",
-    "flagOffCategory": "Outside category",
+    "allCategories": "All groups",
     "statusActivo": "Active",
     "statusInactivo": "Inactive",
     "statusRetirado": "Withdrawn",
@@ -266,6 +259,9 @@
     "fFirstName": "First names",
     "fLastName": "Last names",
     "fBirthDate": "Birth date",
+    "fSex": "Sex",
+    "sexMasculino": "Male",
+    "sexFemenino": "Female",
     "fBirthPlace": "Birth place",
     "fSchool": "School",
     "fGrade": "Grade",
@@ -429,7 +425,6 @@
     "wizReviewName": "Player",
     "wizReviewCategory": "Training group",
     "wizReviewTeam": "Team",
-    "flagNoTeam": "No team",
     "noTeamYet": "No team yet"
   },
   "tutors": {
@@ -642,6 +637,9 @@
     "catDays": "Training days",
     "catPlace": "Place",
     "catTime": "Time",
+    "catCoach": "Coach",
+    "catAssistant": "Assistant",
+    "catNoCoach": "No coach",
     "catGenerate": "Generate",
     "catGenerateMonth": "Month",
     "catNoSchedule": "No schedule set",
@@ -711,6 +709,7 @@
     "generateCategories": "Training groups",
     "noCategories": "No training groups yet.",
     "noSchedule": "no schedule set",
+    "dayEmpty": "No sessions this day.",
     "roster": "Roster",
     "rosterEmpty": "No players to mark yet.",
     "close": "Complete",
@@ -737,7 +736,7 @@
     "noSeason": "There is no active season.",
     "noPeriods": "No assessment periods yet — add one in Settings → Periods.",
     "periodLabel": "Period",
-    "teamsEmpty": "No teams for this season yet.",
+    "teamsEmpty": "No training groups to evaluate.",
     "progress": "{done}/{total} finalized",
     "statusNotStarted": "Not started",
     "statusDraft": "Draft",
@@ -756,7 +755,7 @@
     "rubricToggle": "View rubric",
     "saved": "Saved.",
     "noCriteria": "No active criteria yet — add some in Settings → Criteria.",
-    "noRoster": "No players enrolled on this team yet.",
+    "noRoster": "No players enrolled in this training group yet.",
     "scoredCount": "{scored}/{total} criteria scored",
     "colPlayer": "Player",
     "colStatus": "Status"

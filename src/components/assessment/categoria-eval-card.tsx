@@ -2,17 +2,16 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Users } from "lucide-react";
 
-import type { CalendarTeam } from "@/server/attendance";
-import type { TeamEvalSummary } from "@/server/evaluation";
+import type { CategoriaEvalSummary } from "@/server/evaluation";
 
-export function TeamEvalCard({
-  team,
+export function CategoriaEvalCard({
+  categoria,
   periodId,
   summary,
 }: {
-  team: CalendarTeam;
+  categoria: { id: string; nombre: string; color: string };
   periodId: string;
-  summary?: TeamEvalSummary;
+  summary?: CategoriaEvalSummary;
 }) {
   const t = useTranslations("evaluation");
   const done = summary?.finalizadas ?? 0;
@@ -21,10 +20,17 @@ export function TeamEvalCard({
 
   return (
     <Link
-      href={`/assessment/${team.id}?period=${periodId}`}
+      href={`/assessment/${categoria.id}?period=${periodId}`}
       className="group flex flex-col gap-3 rounded-2xl border border-line bg-surface p-4 transition-[border-color] duration-200 ease-out-soft hover:border-line-strong"
     >
-      <h3 className="font-semibold group-hover:text-brand-legible">{team.nombre}</h3>
+      <h3 className="flex items-center gap-2 font-semibold group-hover:text-brand-legible">
+        <span
+          aria-hidden
+          className="size-2.5 shrink-0 rounded-full"
+          style={{ backgroundColor: categoria.color }}
+        />
+        {categoria.nombre}
+      </h3>
       <div className="flex items-center gap-1.5 text-xs text-muted">
         <Users className="size-3.5 shrink-0" />
         <span>{t("progress", { done, total })}</span>

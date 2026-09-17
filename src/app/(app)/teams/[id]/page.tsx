@@ -12,7 +12,7 @@ import { Card, CardTitle } from "@/components/ui/card";
 import { ConfirmButton } from "@/components/ui/confirm-button";
 import { DataTable, Td, Th, Tr } from "@/components/ui/data-table";
 import { Detail, DetailList } from "@/components/ui/detail-list";
-import { FormBanner } from "@/components/ui/form-banner";
+import { SavedToast } from "@/components/ui/saved-toast";
 import { WEEKDAY_LABEL_KEY } from "@/lib/weekdays";
 import { currentProfile, isAdmin } from "@/server/players";
 import { getTeamHeader, getTeamRoster } from "@/server/teams";
@@ -29,13 +29,10 @@ export async function generateMetadata({
 
 export default async function TeamRosterPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { id } = await params;
-  const saved = (await searchParams).saved === "1";
   const t = await getTranslations("teams");
   const tc = await getTranslations("common");
   const locale = await getLocale();
@@ -73,7 +70,7 @@ export default async function TeamRosterPage({
         {t("title")}
       </Link>
 
-      {saved && <FormBanner success={t("toastUpdated")} />}
+      <SavedToast message={t("toastUpdated")} />
 
       <Card className="flex flex-wrap items-start gap-4">
         <div className="min-w-0 flex-1">

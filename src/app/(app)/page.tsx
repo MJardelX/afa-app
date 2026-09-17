@@ -65,7 +65,7 @@ export default async function DashboardPage() {
     supabase
       .from("v_jugadores")
       .select(
-        "id, codigo, nombre_completo, categoria, categoria_por_edad, edad_deportiva, fuera_de_categoria, sin_inscribir, sin_equipo, estado",
+        "id, codigo, nombre_completo, categoria, categoria_por_edad, edad_deportiva, fuera_de_categoria, sin_inscribir, estado",
       )
       .eq("estado", "activo"),
     supabase
@@ -452,7 +452,6 @@ type Player = {
   categoria_por_edad: string | null;
   fuera_de_categoria: boolean | null;
   sin_inscribir: boolean | null;
-  sin_equipo: boolean | null;
 };
 
 type RankingRow = {
@@ -497,15 +496,6 @@ function buildAlerts(
         detail: t("alertNotRegisteredDetail", {
           code: p.codigo ?? "—",
           category: p.categoria_por_edad ?? t("noCategory"),
-        }),
-      });
-    } else if (p.sin_equipo) {
-      alerts.push({
-        key: `no-team-${p.id}`,
-        title: t("alertNoTeam", { name: p.nombre_completo ?? "—" }),
-        detail: t("alertNoTeamDetail", {
-          code: p.codigo ?? "—",
-          category: p.categoria ?? p.categoria_por_edad ?? t("noCategory"),
         }),
       });
     } else if (p.fuera_de_categoria) {

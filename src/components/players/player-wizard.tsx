@@ -15,7 +15,7 @@ import { Field, Select, Textarea, TextInput } from "@/components/ui/field";
 import { FormBanner } from "@/components/ui/form-banner";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { sportingAge } from "@/lib/format";
-import { playerSchema } from "@/lib/schemas/player";
+import { PLAYER_SEXES, playerSchema } from "@/lib/schemas/player";
 import { guardianSchema } from "@/lib/schemas/tutor";
 import { cn } from "@/lib/utils";
 
@@ -53,6 +53,7 @@ const FIELD_STEP: Record<string, number> = {
   nombres: 1,
   apellidos: 1,
   fecha_nacimiento: 1,
+  sexo: 1,
   lugar_nacimiento: 1,
   direccion: 1,
   fecha_ingreso: 1,
@@ -256,10 +257,10 @@ export function PlayerWizard({
 
       <FormBanner error={state?.error} />
 
-      {/* Body — the one flat, solid surface. The stepper above and the action
-          bar below float free as their own liquid-glass panels. Extra bottom
-          padding keeps the last field clear of the floating action bar (§8.3). */}
-      <div className="rounded-2xl border border-line bg-surface px-5 pb-40 pt-5 sm:px-6 sm:pt-6 lg:pb-28">
+      {/* Body — the one flat, solid surface. Neither the stepper above nor the
+          action bar below float over it, so no extra clearance padding is
+          needed at the bottom. */}
+      <div className="rounded-2xl border border-line bg-surface px-5 py-5 sm:px-6 sm:py-6">
         {/* STEP 1 — player -------------------------------------------------- */}
         <Panel hidden={shownStep !== 1} title={t("wizStep1")} hint={t("wizStep1Hint")}>
           <div className="grid gap-x-5 gap-y-[22px] sm:grid-cols-2">
@@ -309,6 +310,18 @@ export function PlayerWizard({
                 invalid={!!errs.fecha_nacimiento}
                 max={today()}
               />
+            </Field>
+            <Field label={t("fSex")} htmlFor="sexo" required error={errs.sexo}>
+              <Select id="sexo" name="sexo" defaultValue="" invalid={!!errs.sexo}>
+                <option value="" disabled>
+                  {tc("choose")}
+                </option>
+                {PLAYER_SEXES.map((s) => (
+                  <option key={s} value={s}>
+                    {t(s === "masculino" ? "sexMasculino" : "sexFemenino")}
+                  </option>
+                ))}
+              </Select>
             </Field>
             <Field
               label={t("fJoinDate")}
@@ -553,9 +566,9 @@ export function PlayerWizard({
 
       {/* Action bar (§8.2) — Cancel far left; Back + Continue travel together
           on the right. Back always renders (disabled on step 1) so the row
-          never jumps. Floats as its own liquid-glass panel, sticky to the foot
-          of the viewport so Continue is always in reach on a long step. */}
-      <div className="wizard-actions sticky bottom-[5.5rem] z-10 flex items-center gap-2.5 rounded-2xl px-3 py-3 sm:px-4 lg:bottom-5">
+          never jumps. Sits right after the form, in normal flow — it no
+          longer floats over the content. */}
+      <div className="wizard-actions flex items-center gap-2.5 rounded-2xl px-3 py-3 sm:px-4">
         <Link href="/players" className={buttonClasses("ghost", "md")}>
           {tc("cancel")}
         </Link>
@@ -642,7 +655,7 @@ function Stepper({
   const cur = steps[current - 1];
 
   return (
-    <div className="wizard-rail sticky top-[4.5rem] z-10 rounded-2xl px-4 py-3.5 sm:px-6 sm:py-4 lg:top-4">
+    <div className="wizard-rail rounded-2xl px-4 py-3.5 sm:px-6 sm:py-4">
       {/* Mobile (§5.2) — one node + a five-segment bar. */}
       <div className="sm:hidden">
         <div className="flex items-center gap-3">

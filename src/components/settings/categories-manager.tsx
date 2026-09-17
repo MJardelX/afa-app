@@ -2,7 +2,16 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { CalendarClock, CalendarPlus, MapPin, Pencil, Plus, Power, Trash2 } from "lucide-react";
+import {
+  CalendarClock,
+  CalendarPlus,
+  MapPin,
+  Pencil,
+  Plus,
+  Power,
+  Trash2,
+  UserRound,
+} from "lucide-react";
 
 import {
   actualizarCategoria,
@@ -15,12 +24,14 @@ import { generarSesiones, type SessionState } from "@/app/(app)/attendance/actio
 import { Badge } from "@/components/ui/badge";
 import { buttonClasses } from "@/components/ui/button";
 import { ConfirmButton } from "@/components/ui/confirm-button";
-import { Field, TextInput } from "@/components/ui/field";
+import { Field, Select, TextInput } from "@/components/ui/field";
 import { FormBanner } from "@/components/ui/form-banner";
 import { IconAction, iconActionClasses } from "@/components/ui/icon-action";
+import { ListPagination, usePagedList } from "@/components/ui/list-pagination";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { monthBounds, monthParam, parseMonthParam } from "@/lib/calendar";
 import { WEEKDAYS, WEEKDAY_LABEL_KEY } from "@/lib/weekdays";
+import type { TeamStaff } from "@/server/teams";
 
 type Category = {
   id: string;
@@ -33,14 +44,20 @@ type Category = {
   hora_entreno: string | null;
   lugar_entreno: string | null;
   activa: boolean;
+  entrenador_id: string | null;
+  auxiliar_id: string | null;
+  entrenadorNombre: string | null;
+  auxiliarNombre: string | null;
 };
 
 export function CategoriesManager({
   rows,
   admin,
+  staff,
 }: {
   rows: Category[];
   admin: boolean;
+  staff: TeamStaff[];
 }) {
   const t = useTranslations("settings");
   const [creating, setCreating] = useState(false);
@@ -48,6 +65,7 @@ export function CategoriesManager({
 
   const inactiveCount = rows.filter((c) => !c.activa).length;
   const visibleRows = showInactive ? rows : rows.filter((c) => c.activa);
+  const { page, setPage, pageCount, pageItems } = usePagedList(visibleRows);
 
   return (
     <div className="space-y-4">
@@ -56,17 +74,20 @@ export function CategoriesManager({
           {rows.length === 0 ? t("catEmpty") : t("catAllInactive")}
         </p>
       ) : (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-4">
-          {visibleRows.map((c) => (
-            <CategoryCard key={c.id} category={c} admin={admin} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-4">
+            {pageItems.map((c) => (
+              <CategoryCard key={c.id} category={c} admin={admin} staff={staff} />
+            ))}
+          </div>
+          <ListPagination page={page} pageCount={pageCount} onChange={setPage} />
+        </>
       )}
 
       <div className="flex flex-wrap items-center gap-2">
         {admin &&
           (creating ? (
-            <CategoryForm mode="create" onDone={() => setCreating(false)} />
+            <CategoryForm mode="create" staff={staff} onDone={() => setCreating(false)} />
           ) : (
             <button
               type="button"
@@ -97,9 +118,11 @@ export function CategoriesManager({
 function CategoryCard({
   category,
   admin,
+  staff,
 }: {
   category: Category;
   admin: boolean;
+  staff: TeamStaff[];
 }) {
   const t = useTranslations("settings");
   const tc = useTranslations("common");
@@ -116,6 +139,7 @@ function CategoryCard({
         <CategoryForm
           mode="edit"
           category={category}
+          staff={staff}
           onDone={() => setEditing(false)}
         />
       </div>
@@ -173,6 +197,12 @@ function CategoryCard({
             <span className="truncate">{category.lugar_entreno}</span>
           </div>
         )}
+        <div className="flex items-center gap-1.5">
+          <UserRound className="size-3.5 shrink-0" />
+          <span className={category.entrenadorNombre ? "" : "italic"}>
+            {category.entrenadorNombre ?? t("catNoCoach")}
+          </span>
+        </div>
       </dl>
 
       {admin && (
@@ -225,10 +255,12 @@ function CategoryCard({
 function CategoryForm({
   mode,
   category,
+  staff,
   onDone,
 }: {
   mode: "create" | "edit";
   category?: Category;
+  staff: TeamStaff[];
   onDone: () => void;
 }) {
   const t = useTranslations("settings");
@@ -327,6 +359,34 @@ function CategoryForm({
             defaultValue={category?.lugar_entreno ?? ""}
             autoComplete="off"
           />
+        </Field>
+        <Field label={t("catCoach")} htmlFor="cat-entrenador">
+          <Select
+            id="cat-entrenador"
+            name="entrenador_id"
+            defaultValue={category?.entrenador_id ?? ""}
+          >
+            <option value="">{t("catNoCoach")}</option>
+            {staff.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.nombre_completo}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        <Field label={t("catAssistant")} htmlFor="cat-auxiliar">
+          <Select
+            id="cat-auxiliar"
+            name="auxiliar_id"
+            defaultValue={category?.auxiliar_id ?? ""}
+          >
+            <option value="">{t("catNoCoach")}</option>
+            {staff.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.nombre_completo}
+              </option>
+            ))}
+          </Select>
         </Field>
       </div>
 

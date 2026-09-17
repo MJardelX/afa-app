@@ -77,6 +77,7 @@ export default async function EditPlayerPage({
             nombres: player.nombres,
             apellidos: player.apellidos,
             fecha_nacimiento: player.fecha_nacimiento,
+            sexo: player.sexo,
             lugar_nacimiento: player.lugar_nacimiento,
             direccion: player.direccion,
             fecha_ingreso: player.fecha_ingreso,

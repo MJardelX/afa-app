@@ -12,12 +12,11 @@ export type EvalState = { ok?: boolean; error?: string } | null;
 
 export type ScoreInput = { criterioId: string; puntaje: number };
 
-async function requireEvaluator(jugadorId: string) {
+async function requireEvaluator() {
   const te = await getTranslations("evaluation");
   const profile = await currentProfile();
   if (!profile) return { error: te("noPermission") } as const;
-  const allowed = await canEvaluatePlayer(jugadorId, profile);
-  if (!allowed) return { error: te("noPermission") } as const;
+  if (!canEvaluatePlayer(profile)) return { error: te("noPermission") } as const;
   return { profile } as const;
 }
 
@@ -28,7 +27,7 @@ export async function guardarBorrador(
   scores: ScoreInput[],
   comentarioGeneral: string | null,
 ): Promise<EvalState> {
-  const check = await requireEvaluator(jugadorId);
+  const check = await requireEvaluator();
   if ("error" in check) return check;
   const { profile } = check;
   const te = await getTranslations("evaluation");
@@ -81,7 +80,7 @@ export async function finalizarEvaluacion(
   jugadorId: string,
   periodoId: string,
 ): Promise<EvalState> {
-  const check = await requireEvaluator(jugadorId);
+  const check = await requireEvaluator();
   if ("error" in check) return check;
   const { profile } = check;
   const te = await getTranslations("evaluation");
@@ -108,7 +107,7 @@ export async function reabrirEvaluacion(
   jugadorId: string,
   periodoId: string,
 ): Promise<EvalState> {
-  const check = await requireEvaluator(jugadorId);
+  const check = await requireEvaluator();
   if ("error" in check) return check;
   const { profile } = check;
 

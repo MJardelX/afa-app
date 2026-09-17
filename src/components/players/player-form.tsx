@@ -13,7 +13,7 @@ import { Field, Select, Textarea, TextInput } from "@/components/ui/field";
 import { FormBanner } from "@/components/ui/form-banner";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { categoryForAge, sportingAge } from "@/lib/format";
-import { PLAYER_STATUSES } from "@/lib/schemas/player";
+import { PLAYER_SEXES, PLAYER_STATUSES } from "@/lib/schemas/player";
 
 type Category = { id: string; nombre: string; edad_min: number; edad_max: number };
 
@@ -23,6 +23,7 @@ export type PlayerFormData = {
   nombres: string;
   apellidos: string;
   fecha_nacimiento: string;
+  sexo: string;
   lugar_nacimiento: string | null;
   direccion: string | null;
   fecha_ingreso: string | null;
@@ -118,6 +119,15 @@ export function PlayerForm({
               name="lugar_nacimiento"
               defaultValue={player.lugar_nacimiento ?? ""}
             />
+          </Field>
+          <Field label={t("fSex")} htmlFor="sexo" required error={errs.sexo}>
+            <Select id="sexo" name="sexo" defaultValue={player.sexo}>
+              {PLAYER_SEXES.map((s) => (
+                <option key={s} value={s}>
+                  {t(s === "masculino" ? "sexMasculino" : "sexFemenino")}
+                </option>
+              ))}
+            </Select>
           </Field>
         </div>
       </section>

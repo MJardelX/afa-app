@@ -145,9 +145,7 @@
     "alertLowAttendanceDetail": "{percent}% de las sesiones convocadas",
     "noCategory": "sin categoría",
     "moduleDescSettings": "Grupos de entrenamiento, temporadas, períodos y criterios de evaluación.",
-    "moduleDescAudit": "Quién cambió qué, y cuándo.",
-    "alertNoTeam": "{name} todavía no tiene equipo",
-    "alertNoTeamDetail": "{code} · inscrito en {category}, falta asignarle equipo"
+    "moduleDescAudit": "Quién cambió qué, y cuándo."
   },
   "attendanceLevel": {
     "good": "Buena",
@@ -204,7 +202,8 @@
     "mustBePast": "La fecha no puede ser futura.",
     "selectOne": "Elegí una opción.",
     "endBeforeStart": "El fin debe ser posterior al inicio.",
-    "invalidColor": "Ingresá un color válido."
+    "invalidColor": "Ingresá un color válido.",
+    "invalidTime": "Ingresá una hora válida."
   },
   "errors": {
     "generic": "No se pudo guardar el cambio. Intentá de nuevo.",
@@ -248,13 +247,7 @@
     "colAges": "Edad (real / deportiva)",
     "colStatus": "Estado",
     "filterCategory": "Categoría",
-    "filterStatus": "Estado",
-    "filterFlag": "Mostrar",
-    "allCategories": "Todas las categorías",
-    "allStatuses": "Todos los estados",
-    "flagAll": "Todos",
-    "flagUnenrolled": "Sin inscribir",
-    "flagOffCategory": "Fuera de categoría",
+    "allCategories": "Todos los grupos",
     "statusActivo": "Activo",
     "statusInactivo": "Inactivo",
     "statusRetirado": "Retirado",
@@ -266,6 +259,9 @@
     "fFirstName": "Nombres",
     "fLastName": "Apellidos",
     "fBirthDate": "Fecha de nacimiento",
+    "fSex": "Sexo",
+    "sexMasculino": "Masculino",
+    "sexFemenino": "Femenino",
     "fBirthPlace": "Lugar de nacimiento",
     "fSchool": "Colegio",
     "fGrade": "Grado",
@@ -429,7 +425,6 @@
     "wizReviewName": "Jugador",
     "wizReviewCategory": "Grupo de entrenamiento",
     "wizReviewTeam": "Equipo",
-    "flagNoTeam": "Sin equipo",
     "noTeamYet": "Sin equipo todavía"
   },
   "tutors": {
@@ -642,6 +637,9 @@
     "catDays": "Días de entreno",
     "catPlace": "Lugar",
     "catTime": "Hora",
+    "catCoach": "Entrenador",
+    "catAssistant": "Auxiliar",
+    "catNoCoach": "Sin entrenador",
     "catGenerate": "Generar",
     "catGenerateMonth": "Mes",
     "catNoSchedule": "Sin horario definido",
@@ -711,6 +709,7 @@
     "generateCategories": "Grupos de entrenamiento",
     "noCategories": "Todavía no hay grupos de entrenamiento.",
     "noSchedule": "sin horario definido",
+    "dayEmpty": "Sin sesiones este día.",
     "roster": "Lista",
     "rosterEmpty": "Todavía no hay jugadores para marcar.",
     "close": "Completar",
@@ -737,7 +736,7 @@
     "noSeason": "No hay una temporada activa.",
     "noPeriods": "Todavía no hay períodos de evaluación — agregá uno en Configuración → Períodos.",
     "periodLabel": "Período",
-    "teamsEmpty": "Todavía no hay equipos en esta temporada.",
+    "teamsEmpty": "No hay grupos de entrenamiento para evaluar.",
     "progress": "{done}/{total} finalizadas",
     "statusNotStarted": "Sin iniciar",
     "statusDraft": "Borrador",
@@ -756,7 +755,7 @@
     "rubricToggle": "Ver rúbrica",
     "saved": "Guardado.",
     "noCriteria": "Todavía no hay criterios activos — agregá algunos en Configuración → Criterios.",
-    "noRoster": "Todavía no hay jugadores inscritos en este equipo.",
+    "noRoster": "Todavía no hay jugadores inscritos en este grupo de entrenamiento.",
     "scoredCount": "{scored}/{total} criterios calificados",
     "colPlayer": "Jugador",
     "colStatus": "Estado"

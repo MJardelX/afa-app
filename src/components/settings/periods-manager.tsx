@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { useLocale, useTranslations } from "next-intl";
 import { Lock, Pencil, Plus, Trash2, Unlock } from "lucide-react";
 
@@ -18,6 +18,7 @@ import { ConfirmButton } from "@/components/ui/confirm-button";
 import { Field, Select, TextInput } from "@/components/ui/field";
 import { FormBanner } from "@/components/ui/form-banner";
 import { IconAction, iconActionClasses } from "@/components/ui/icon-action";
+import { ListPagination, usePagedList } from "@/components/ui/list-pagination";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { formatDate } from "@/lib/format";
 
@@ -47,6 +48,7 @@ export function PeriodsManager({
   const t = useTranslations("settings");
   const router = useRouter();
   const [creating, setCreating] = useState(false);
+  const { page, setPage, pageCount, pageItems } = usePagedList(rows);
 
   return (
     <div className="space-y-3">
@@ -70,11 +72,14 @@ export function PeriodsManager({
       {rows.length === 0 ? (
         <p className="py-4 text-center text-sm text-muted">{t("perEmpty")}</p>
       ) : (
-        <ul className="divide-y divide-line">
-          {rows.map((p) => (
-            <PeriodRow key={p.id} period={p} admin={admin} />
-          ))}
-        </ul>
+        <>
+          <ul className="divide-y divide-line">
+            {pageItems.map((p) => (
+              <PeriodRow key={p.id} period={p} admin={admin} />
+            ))}
+          </ul>
+          <ListPagination page={page} pageCount={pageCount} onChange={setPage} />
+        </>
       )}
 
       {admin &&

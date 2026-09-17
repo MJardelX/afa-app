@@ -3,6 +3,9 @@ import { headers } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
+import NextTopLoader from "nextjs-toploader";
+
+import { ToastProvider } from "@/components/ui/toast";
 
 import "./globals.css";
 
@@ -44,7 +47,31 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <script nonce={nonce} dangerouslySetInnerHTML={{ __html: bootScript }} />
       </head>
       <body className="flex min-h-full flex-col bg-canvas text-fg">
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        {/* Top progress bar on every navigation, so a slow page always gives
+            immediate feedback instead of a frozen screen. Covers <Link>/<a>
+            clicks on its own (it listens for clicks and reads the target
+            href); a plain router.push() from a <select> or a button — not
+            wrapped in an anchor — needs the drop-in useRouter from
+            "nextjs-toploader/app" instead of "next/navigation" at the call
+            site (see calendar.tsx, calendar-filters.tsx, period-select.tsx,
+            periods-manager.tsx for the pattern). The nonce isn't strictly
+            required — style-src keeps 'unsafe-inline' in both environments —
+            but passing it costs nothing and matches how the boot script
+            above is nonced. Uses --chart-bar rather than --brand: --brand is
+            pinned to the same hex in both themes (a text/button contrast
+            floor), which only reads ~2.7:1 against the dark canvas — under
+            the 3:1 floor for UI marks. --chart-bar already solves that same
+            problem by brightening in dark mode. */}
+        <NextTopLoader
+          color="var(--chart-bar)"
+          height={3}
+          showSpinner={false}
+          shadow="0 0 10px var(--chart-bar), 0 0 5px var(--chart-bar)"
+          nonce={nonce}
+        />
+        <NextIntlClientProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

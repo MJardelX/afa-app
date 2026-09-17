@@ -7,42 +7,46 @@ import { PeriodSelect } from "@/components/assessment/period-select";
 import { RosterStatusList } from "@/components/assessment/roster-status-list";
 import { Card, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
-import { getTeamEvaluationRoster } from "@/server/evaluation";
+import { getCategoriaEvaluationRoster } from "@/server/evaluation";
 import { activeSeason, currentProfile } from "@/server/players";
-import { listPeriods } from "@/server/settings";
-import { getTeamHeader } from "@/server/teams";
+import { listCategories, listPeriods } from "@/server/settings";
 
 function str(v: string | string[] | undefined) {
   return (Array.isArray(v) ? v[0] : v) ?? "";
 }
 
+async function getCategoria(categoriaId: string) {
+  const categories = await listCategories();
+  return categories.find((c) => c.id === categoriaId) ?? null;
+}
+
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ teamId: string }>;
+  params: Promise<{ categoriaId: string }>;
 }) {
-  const { teamId } = await params;
-  const team = await getTeamHeader(teamId);
-  return { title: team ? `${team.nombre} · AFA Manager` : "AFA Manager" };
+  const { categoriaId } = await params;
+  const categoria = await getCategoria(categoriaId);
+  return { title: categoria ? `${categoria.nombre} · AFA Manager` : "AFA Manager" };
 }
 
-export default async function TeamAssessmentPage({
+export default async function CategoriaAssessmentPage({
   params,
   searchParams,
 }: {
-  params: Promise<{ teamId: string }>;
+  params: Promise<{ categoriaId: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const { teamId } = await params;
+  const { categoriaId } = await params;
   const t = await getTranslations("evaluation");
   const sp = await searchParams;
 
-  const [team, season, profile] = await Promise.all([
-    getTeamHeader(teamId),
+  const [categoria, season, profile] = await Promise.all([
+    getCategoria(categoriaId),
     activeSeason(),
     currentProfile(),
   ]);
-  if (!team || !season || !profile) notFound();
+  if (!categoria || !season || !profile) notFound();
 
   const periods = await listPeriods(season.id);
   if (periods.length === 0) notFound();
@@ -53,7 +57,7 @@ export default async function TeamAssessmentPage({
     periods.find((p) => !p.cerrado) ??
     periods[periods.length - 1];
 
-  const roster = await getTeamEvaluationRoster(teamId, selected.id, profile.id);
+  const roster = await getCategoriaEvaluationRoster(categoriaId, selected.id, profile.id);
 
   return (
     <div className="space-y-5">
@@ -65,7 +69,7 @@ export default async function TeamAssessmentPage({
         {t("back")}
       </Link>
 
-      <PageHeader title={team.nombre} description={team.categoria} />
+      <PageHeader title={categoria.nombre} />
       <PeriodSelect
         periods={periods.map((p) => ({ id: p.id, nombre: p.nombre }))}
         selectedId={selected.id}
@@ -76,7 +80,7 @@ export default async function TeamAssessmentPage({
           {t("title")}
         </CardTitle>
         <RosterStatusList
-          teamId={teamId}
+          categoriaId={categoriaId}
           periodId={selected.id}
           roster={roster}
         />

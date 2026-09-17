@@ -12,7 +12,7 @@ import {
   listActiveCriteria,
 } from "@/server/evaluation";
 import { currentProfile, getPlayer } from "@/server/players";
-import { getTeamHeader } from "@/server/teams";
+import { listCategories } from "@/server/settings";
 
 function str(v: string | string[] | undefined) {
   return (Array.isArray(v) ? v[0] : v) ?? "";
@@ -32,32 +32,33 @@ export default async function PlayerEvaluationPage({
   params,
   searchParams,
 }: {
-  params: Promise<{ teamId: string; jugadorId: string }>;
+  params: Promise<{ categoriaId: string; jugadorId: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const { teamId, jugadorId } = await params;
+  const { categoriaId, jugadorId } = await params;
   const t = await getTranslations("evaluation");
   const sp = await searchParams;
   const periodId = str(sp.period);
 
-  const [player, team, profile] = await Promise.all([
+  const [player, categories, profile] = await Promise.all([
     getPlayer(jugadorId),
-    getTeamHeader(teamId),
+    listCategories(),
     currentProfile(),
   ]);
-  if (!player || !team || !profile || !periodId) notFound();
+  const categoria = categories.find((c) => c.id === categoriaId) ?? null;
+  if (!player || !categoria || !profile || !periodId) notFound();
 
-  const allowed = await canEvaluatePlayer(jugadorId, profile);
+  const allowed = canEvaluatePlayer(profile);
   if (!allowed) {
     return (
       <div className="mx-auto max-w-md py-16 text-center">
         <p className="text-sm text-muted">{t("noPermission")}</p>
         <Link
-          href={`/assessment/${teamId}?period=${periodId}`}
+          href={`/assessment/${categoriaId}?period=${periodId}`}
           className="mt-3 inline-flex items-center gap-1.5 text-sm text-brand-legible hover:underline"
         >
           <ArrowLeft className="size-4" />
-          {team.nombre}
+          {categoria.nombre}
         </Link>
       </div>
     );
@@ -71,11 +72,11 @@ export default async function PlayerEvaluationPage({
   return (
     <div className="mx-auto w-full max-w-3xl space-y-5">
       <Link
-        href={`/assessment/${teamId}?period=${periodId}`}
+        href={`/assessment/${categoriaId}?period=${periodId}`}
         className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-fg"
       >
         <ArrowLeft className="size-4" />
-        {team.nombre}
+        {categoria.nombre}
       </Link>
 
       <Card className="flex items-center gap-4">
@@ -85,7 +86,7 @@ export default async function PlayerEvaluationPage({
             {player.nombre_completo}
           </h1>
           <p className="text-sm text-muted">
-            {player.codigo} · {team.categoria}
+            {player.codigo} · {categoria.nombre}
           </p>
         </div>
       </Card>

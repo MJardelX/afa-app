@@ -14,6 +14,11 @@ const checkbox = z
   .union([z.literal("on"), z.literal("")])
   .optional()
   .transform((v) => v === "on");
+const optionalUuid = z
+  .string()
+  .trim()
+  .optional()
+  .transform((v) => (v && v.length > 10 ? v : null));
 
 // ── Categories ─────────────────────────────────────────────────────────────
 
@@ -34,8 +39,7 @@ export const categorySchema = z
       .optional()
       .transform((v) => (v && v.length ? v : null)),
     hora_entreno: z
-      .string()
-      .trim()
+      .union([z.literal(""), z.string().trim().regex(/^\d{2}:\d{2}$/, "invalidTime")])
       .optional()
       .transform((v) => (v ? v : null)),
     lugar_entreno: z
@@ -44,6 +48,8 @@ export const categorySchema = z
       .max(120, "tooLong")
       .optional()
       .transform((v) => (v ? v : null)),
+    entrenador_id: optionalUuid,
+    auxiliar_id: optionalUuid,
     activa: checkbox,
   })
   .refine((v) => v.edad_max >= v.edad_min, {

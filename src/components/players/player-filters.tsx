@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 
 type Category = { id: string; nombre: string };
 
-/** Category / status / flag selects. Each writes to the URL and resets ?page. */
+/** Training-group filter. Writes to the URL and resets ?page. */
 export function PlayerFilters({ categories }: { categories: Category[] }) {
   const t = useTranslations("players");
   const router = useRouter();
@@ -28,8 +28,6 @@ export function PlayerFilters({ categories }: { categories: Category[] }) {
   }
 
   const categoria = params.get("categoria") ?? "";
-  const estado = params.get("estado") ?? "activo";
-  const flag = params.get("flag") ?? "";
 
   return (
     <div className="flex flex-wrap items-center gap-2" aria-busy={pending}>
@@ -45,31 +43,6 @@ export function PlayerFilters({ categories }: { categories: Category[] }) {
             {c.nombre}
           </option>
         ))}
-      </FilterSelect>
-
-      <FilterSelect
-        aria-label={t("filterStatus")}
-        value={estado}
-        active={estado !== "activo"}
-        onChange={(e) => set("estado", e.target.value)}
-      >
-        <option value="activo">{t("statusActivo")}</option>
-        <option value="inactivo">{t("statusInactivo")}</option>
-        <option value="retirado">{t("statusRetirado")}</option>
-        <option value="egresado">{t("statusEgresado")}</option>
-        <option value="todos">{t("allStatuses")}</option>
-      </FilterSelect>
-
-      <FilterSelect
-        aria-label={t("filterFlag")}
-        value={flag}
-        active={!!flag}
-        onChange={(e) => set("flag", e.target.value)}
-      >
-        <option value="">{t("flagAll")}</option>
-        <option value="sin_inscribir">{t("flagUnenrolled")}</option>
-        <option value="sin_equipo">{t("flagNoTeam")}</option>
-        <option value="fuera_de_categoria">{t("flagOffCategory")}</option>
       </FilterSelect>
     </div>
   );

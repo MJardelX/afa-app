@@ -17,6 +17,7 @@ import { ConfirmButton } from "@/components/ui/confirm-button";
 import { Field, TextInput } from "@/components/ui/field";
 import { FormBanner } from "@/components/ui/form-banner";
 import { IconAction, iconActionClasses } from "@/components/ui/icon-action";
+import { ListPagination, usePagedList } from "@/components/ui/list-pagination";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { formatDate } from "@/lib/format";
 
@@ -39,17 +40,21 @@ export function SeasonsManager({
 }) {
   const t = useTranslations("settings");
   const [creating, setCreating] = useState(false);
+  const { page, setPage, pageCount, pageItems } = usePagedList(rows);
 
   return (
     <div className="space-y-3">
       {rows.length === 0 ? (
         <p className="py-4 text-center text-sm text-muted">{t("seaEmpty")}</p>
       ) : (
-        <ul className="divide-y divide-line">
-          {rows.map((s) => (
-            <SeasonRow key={s.id} season={s} admin={admin} />
-          ))}
-        </ul>
+        <>
+          <ul className="divide-y divide-line">
+            {pageItems.map((s) => (
+              <SeasonRow key={s.id} season={s} admin={admin} />
+            ))}
+          </ul>
+          <ListPagination page={page} pageCount={pageCount} onChange={setPage} />
+        </>
       )}
 
       {admin &&

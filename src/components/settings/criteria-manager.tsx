@@ -18,6 +18,7 @@ import { ConfirmButton } from "@/components/ui/confirm-button";
 import { Field, Select, Textarea, TextInput } from "@/components/ui/field";
 import { FormBanner } from "@/components/ui/form-banner";
 import { IconAction, iconActionClasses } from "@/components/ui/icon-action";
+import { ListPagination, usePagedList } from "@/components/ui/list-pagination";
 import { SubmitButton } from "@/components/ui/submit-button";
 
 type Criterion = {
@@ -74,11 +75,7 @@ export function CriteriaManager({
             <h3 className="text-xs font-semibold uppercase tracking-wide text-faint">
               {t(DIM_KEY[g.dimension])}
             </h3>
-            <ul className="divide-y divide-line">
-              {g.items.map((c) => (
-                <CriterionRow key={c.id} criterion={c} admin={admin} />
-              ))}
-            </ul>
+            <CriteriaGroup items={g.items} admin={admin} />
           </section>
         ))
       )}
@@ -97,6 +94,21 @@ export function CriteriaManager({
           </button>
         ))}
     </div>
+  );
+}
+
+function CriteriaGroup({ items, admin }: { items: Criterion[]; admin: boolean }) {
+  const { page, setPage, pageCount, pageItems } = usePagedList(items);
+
+  return (
+    <>
+      <ul className="divide-y divide-line">
+        {pageItems.map((c) => (
+          <CriterionRow key={c.id} criterion={c} admin={admin} />
+        ))}
+      </ul>
+      <ListPagination page={page} pageCount={pageCount} onChange={setPage} />
+    </>
   );
 }
 
