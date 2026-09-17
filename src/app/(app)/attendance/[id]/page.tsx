@@ -49,7 +49,11 @@ export default async function SessionDetailPage({
   const [roster, attendance] = manage
     ? await Promise.all([
         getSessionRoster(
-          { categoriaId: session.categoriaId, equipoId: session.equipoId },
+          {
+            categoriaId: session.categoriaId,
+            equipoId: session.equipoId,
+            fecha: session.fecha,
+          },
           session.temporadaId,
         ),
         getSessionAttendance(id),

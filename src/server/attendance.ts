@@ -235,8 +235,18 @@ export type RosterPlayer = {
  * principal registration across every team of the category (they all train
  * together); for a match, that team's roster.
  */
+/** `fn_validar_asistencia`'s own date-range check, mirrored here so the
+ *  roster never shows a player the trigger would then reject. */
+function enrolledOnDate(
+  fecha: string,
+  fechaAlta: string,
+  fechaBaja: string | null,
+) {
+  return fecha >= fechaAlta && (fechaBaja === null || fecha <= fechaBaja);
+}
+
 export async function getSessionRoster(
-  session: { categoriaId: string | null; equipoId: string | null },
+  session: { categoriaId: string | null; equipoId: string | null; fecha: string },
   temporadaId: string,
 ): Promise<RosterPlayer[]> {
   const supabase = await createClient();
@@ -244,20 +254,22 @@ export async function getSessionRoster(
   if (session.equipoId) {
     const { data } = await supabase
       .from("inscripciones")
-      .select("jugador_id, jugadores(nombres, apellidos, codigo)")
+      .select("jugador_id, fecha_alta, fecha_baja, jugadores(nombres, apellidos, codigo)")
       .eq("equipo_id", session.equipoId)
       .eq("estado", "activa")
       .order("jugador_id");
-    return (data ?? []).map((r) => {
-      const j = one(r.jugadores);
-      return {
-        jugadorId: r.jugador_id,
-        nombres: j?.nombres ?? "",
-        apellidos: j?.apellidos ?? "",
-        codigo: j?.codigo ?? "",
-        equipo: null,
-      };
-    });
+    return (data ?? [])
+      .filter((r) => enrolledOnDate(session.fecha, r.fecha_alta, r.fecha_baja))
+      .map((r) => {
+        const j = one(r.jugadores);
+        return {
+          jugadorId: r.jugador_id,
+          nombres: j?.nombres ?? "",
+          apellidos: j?.apellidos ?? "",
+          codigo: j?.codigo ?? "",
+          equipo: null,
+        };
+      });
   }
 
   if (session.categoriaId) {
@@ -268,7 +280,7 @@ export async function getSessionRoster(
     const { data } = await supabase
       .from("inscripciones")
       .select(
-        "jugador_id, categoria_id, equipos(nombre, categoria_id), jugadores(nombres, apellidos, codigo)",
+        "jugador_id, categoria_id, fecha_alta, fecha_baja, equipos(nombre, categoria_id), jugadores(nombres, apellidos, codigo)",
       )
       .eq("temporada_id", temporadaId)
       .eq("estado", "activa")
@@ -281,6 +293,7 @@ export async function getSessionRoster(
       const eq = one(r.equipos);
       const effectiveCat = r.categoria_id ?? eq?.categoria_id ?? null;
       if (effectiveCat !== session.categoriaId) continue;
+      if (!enrolledOnDate(session.fecha, r.fecha_alta, r.fecha_baja)) continue;
       const j = one(r.jugadores);
       byPlayer.set(r.jugador_id, {
         jugadorId: r.jugador_id,
