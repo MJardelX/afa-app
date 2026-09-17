@@ -5,6 +5,8 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
 import NextTopLoader from "nextjs-toploader";
 
+import { ToastProvider } from "@/components/ui/toast";
+
 import "./globals.css";
 
 const geistSans = Geist({
@@ -67,7 +69,9 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           shadow="0 0 10px var(--chart-bar), 0 0 5px var(--chart-bar)"
           nonce={nonce}
         />
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

@@ -39,8 +39,7 @@ export const categorySchema = z
       .optional()
       .transform((v) => (v && v.length ? v : null)),
     hora_entreno: z
-      .string()
-      .trim()
+      .union([z.literal(""), z.string().trim().regex(/^\d{2}:\d{2}$/, "invalidTime")])
       .optional()
       .transform((v) => (v ? v : null)),
     lugar_entreno: z

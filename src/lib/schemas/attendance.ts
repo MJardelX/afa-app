@@ -30,8 +30,7 @@ const optionalText = (max: number) =>
     .transform((v) => (v ? v : null));
 
 const optionalTime = z
-  .string()
-  .trim()
+  .union([z.literal(""), z.string().trim().regex(/^\d{2}:\d{2}$/, "invalidTime")])
   .optional()
   .transform((v) => (v ? v : null));
 

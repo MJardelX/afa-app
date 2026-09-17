@@ -164,6 +164,15 @@
   --glass-sheen: light-dark(rgb(255 255 255 / 0.9), rgb(255 255 255 / 0.22));
   --glass-shadow: light-dark(rgb(11 104 150 / 0.28), rgb(1 10 18 / 0.6));
 
+  /* Tinted glass — success/error toasts. Same frosted treatment as chrome
+     glass, but colored so the tone reads at a glance, not just from the icon. */
+  --glass-success: light-dark(rgb(236 253 245 / 0.88), rgb(6 78 59 / 0.82));
+  --glass-success-frost: light-dark(rgb(236 253 245 / 0.7), rgb(6 78 59 / 0.55));
+  --glass-success-border: light-dark(rgb(21 128 61 / 0.3), rgb(74 222 128 / 0.3));
+  --glass-error: light-dark(rgb(254 242 242 / 0.88), rgb(127 29 29 / 0.82));
+  --glass-error-frost: light-dark(rgb(254 242 242 / 0.7), rgb(127 29 29 / 0.55));
+  --glass-error-border: light-dark(rgb(185 28 28 / 0.3), rgb(252 165 165 / 0.3));
+
   /* Glass panel — for dashboard widgets / accent cards floating over the
      aurora. Lighter than chrome glass; content is short (numbers, labels), so
      more transparency is safe. Dark mode gets a higher floor per 2026 guidance
@@ -444,6 +453,18 @@ h3 {
     box-shadow: var(--elev-1);
   }
 
+  /* Toast tones — stack on top of `.glass` (same blur/shadow/specular line),
+     overriding only the fill/border so success reads green and error reads
+     red at a glance, distinct from the chrome's neutral glass. */
+  .glass-success {
+    background: var(--glass-success);
+    border-color: var(--glass-success-border);
+  }
+  .glass-error {
+    background: var(--glass-error);
+    border-color: var(--glass-error-border);
+  }
+
   /* Fixed aurora wash so glass has colour + lightness variation to refract. */
   .app-bg {
     position: fixed;
@@ -512,6 +533,14 @@ h3 {
       -webkit-backdrop-filter: blur(20px) saturate(180%);
       backdrop-filter: blur(20px) saturate(180%);
     }
+    /* Declared after `.glass` so the tint wins over its neutral frost —
+       same element carries both classes. */
+    .glass-success {
+      background: var(--glass-success-frost);
+    }
+    .glass-error {
+      background: var(--glass-error-frost);
+    }
     .field-glass {
       background: var(--field-frost);
       -webkit-backdrop-filter: blur(8px) saturate(140%);
@@ -528,6 +557,16 @@ h3 {
       backdrop-filter: none;
       background: var(--surface);
       border-color: var(--line);
+    }
+    /* Declared after the neutral reset above so the tone still reads without
+       transparency, instead of flattening to the same grey as everything else. */
+    .glass-success {
+      background: var(--status-good-bg);
+      border-color: var(--status-good);
+    }
+    .glass-error {
+      background: var(--danger-bg);
+      border-color: var(--danger);
     }
     .glass::before {
       display: none;

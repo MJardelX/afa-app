@@ -202,7 +202,8 @@
     "mustBePast": "La fecha no puede ser futura.",
     "selectOne": "Elegí una opción.",
     "endBeforeStart": "El fin debe ser posterior al inicio.",
-    "invalidColor": "Ingresá un color válido."
+    "invalidColor": "Ingresá un color válido.",
+    "invalidTime": "Ingresá una hora válida."
   },
   "errors": {
     "generic": "No se pudo guardar el cambio. Intentá de nuevo.",

@@ -202,7 +202,8 @@
     "mustBePast": "The date can't be in the future.",
     "selectOne": "Choose an option.",
     "endBeforeStart": "The end must be after the start.",
-    "invalidColor": "Enter a valid color."
+    "invalidColor": "Enter a valid color.",
+    "invalidTime": "Enter a valid time."
   },
   "errors": {
     "generic": "The change couldn't be saved. Please try again.",
