@@ -4,7 +4,7 @@ export type AttendanceRankRow = {
   jugadorId: string;
   nombre: string;
   codigo: string;
-  equipoId: string;
+  equipoId: string | null;
   equipo: string;
   categoriaId: string;
   categoria: string;
@@ -37,12 +37,12 @@ export async function listAttendanceRanking(
     .order("puesto_categoria");
 
   return (data ?? [])
-    .filter((r) => r.jugador_id && r.equipo_id && r.categoria_id)
+    .filter((r) => r.jugador_id && r.categoria_id)
     .map((r) => ({
       jugadorId: r.jugador_id as string,
       nombre: r.nombre_completo ?? "",
       codigo: r.codigo ?? "",
-      equipoId: r.equipo_id as string,
+      equipoId: r.equipo_id,
       equipo: r.equipo ?? "—",
       categoriaId: r.categoria_id as string,
       categoria: r.categoria ?? "—",

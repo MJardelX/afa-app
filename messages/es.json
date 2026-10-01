@@ -207,6 +207,7 @@
   },
   "errors": {
     "generic": "No se pudo guardar el cambio. Intentá de nuevo.",
+    "network": "No se pudo conectar. Revisá tu conexión e intentá de nuevo.",
     "duplicate": "Ese valor ya está en uso.",
     "referenced": "Este registro todavía está vinculado a otros.",
     "checkFailed": "Algún valor está fuera del rango permitido.",

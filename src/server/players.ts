@@ -78,9 +78,19 @@ export async function activeCategories() {
 /** The signed-in user's profile (role gating in the UI). */
 export async function currentProfile() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user;
+  try {
+    ({
+      data: { user },
+    } = await supabase.auth.getUser());
+  } catch (error) {
+    // getUser() throws (rather than returning { error }) for anything that
+    // isn't a recognized auth error — a dropped connection or DNS hiccup
+    // talking to Supabase included. Treat it as "couldn't verify" rather
+    // than crashing the whole page.
+    console.error("[currentProfile] auth.getUser() failed:", error);
+    return null;
+  }
   if (!user) return null;
   const { data } = await supabase
     .from("perfiles")

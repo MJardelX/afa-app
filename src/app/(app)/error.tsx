@@ -1,12 +1,23 @@
 "use client";
 
+import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { RotateCw, TriangleAlert } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
-export default function AppError({ reset }: { error: Error; reset: () => void }) {
+export default function AppError({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
   const t = useTranslations("common");
+
+  useEffect(() => {
+    console.error("[AppError]", error.digest ?? "", error);
+  }, [error]);
 
   return (
     <div className="mx-auto flex max-w-sm flex-col items-center gap-4 py-16 text-center">
