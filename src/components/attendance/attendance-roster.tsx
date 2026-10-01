@@ -75,6 +75,7 @@ export function AttendanceRoster({
 }) {
   const t = useTranslations("attendance");
   const tc = useTranslations("common");
+  const te = useTranslations("errors");
 
   const initial = useMemo(() => {
     const byPlayer = new Map(existing.map((m) => [m.jugadorId, m]));
@@ -92,28 +93,34 @@ export function AttendanceRoster({
   }, [roster, existing]);
 
   const [marks, setMarks] = useState(initial);
-  const [dirty, setDirty] = useState(false);
+  const [dirtyIds, setDirtyIds] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
   function update(jugadorId: string, patch: Partial<MarkState>) {
     setMarks((prev) => ({ ...prev, [jugadorId]: { ...prev[jugadorId], ...patch } }));
-    setDirty(true);
+    setDirtyIds((prev) => new Set(prev).add(jugadorId));
     setSaved(false);
   }
 
   function markAllPresent() {
+    const toMark: string[] = [];
     setMarks((prev) => {
       const next = { ...prev };
       for (const p of roster) {
         if (!next[p.jugadorId]?.estado) {
           next[p.jugadorId] = { ...next[p.jugadorId], estado: "presente" };
+          toMark.push(p.jugadorId);
         }
       }
       return next;
     });
-    setDirty(true);
+    setDirtyIds((prev) => {
+      const next = new Set(prev);
+      for (const id of toMark) next.add(id);
+      return next;
+    });
     setSaved(false);
   }
 
@@ -126,12 +133,12 @@ export function AttendanceRoster({
   async function handleSave() {
     setSaving(true);
     setError(null);
-    const payload = roster
-      .map((p) => {
-        const m = marks[p.jugadorId];
+    const payload = Array.from(dirtyIds)
+      .map((jugadorId) => {
+        const m = marks[jugadorId];
         if (!m?.estado) return null;
         return {
-          jugadorId: p.jugadorId,
+          jugadorId,
           estado: m.estado,
           minutosJugados: m.minutos ? Number(m.minutos) : null,
           goles: m.goles ? Number(m.goles) : 0,
@@ -140,13 +147,21 @@ export function AttendanceRoster({
       })
       .filter((m): m is NonNullable<typeof m> => m !== null);
 
-    const res = await registrarAsistencia(sessionId, payload);
-    setSaving(false);
-    if ("error" in res) {
-      setError(res.error);
-    } else {
-      setDirty(false);
-      setSaved(true);
+    try {
+      const res = await registrarAsistencia(sessionId, payload);
+      if ("error" in res) {
+        setError(res.error);
+      } else {
+        setDirtyIds(new Set());
+        setSaved(true);
+      }
+    } catch {
+      // The server action call itself failed (dropped connection, DNS
+      // hiccup) rather than resolving with { error } — surface the same
+      // way instead of leaving the button stuck on "saving" forever.
+      setError(te("network"));
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -267,13 +282,13 @@ export function AttendanceRoster({
       {error && <p className="text-xs text-danger">{error}</p>}
 
       <div className="flex items-center justify-end gap-3 border-t border-line pt-3">
-        {saved && !dirty && (
+        {saved && dirtyIds.size === 0 && (
           <span className="text-xs text-status-good-fg">{t("markSaved")}</span>
         )}
         <button
           type="button"
           onClick={handleSave}
-          disabled={saving || !dirty}
+          disabled={saving || dirtyIds.size === 0}
           className={buttonClasses("primary", "sm")}
         >
           {saving ? tc("saving") : t("markSave")}

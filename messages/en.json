@@ -207,6 +207,7 @@
   },
   "errors": {
     "generic": "The change couldn't be saved. Please try again.",
+    "network": "Couldn't connect. Check your connection and try again.",
     "duplicate": "That value is already in use.",
     "referenced": "This record is still linked to others.",
     "checkFailed": "Some value is out of the allowed range.",

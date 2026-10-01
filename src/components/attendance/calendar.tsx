@@ -8,6 +8,7 @@ import {
   Award,
   ChevronLeft,
   ChevronRight,
+  CircleCheck,
   Dumbbell,
   Handshake,
   Plus,
@@ -36,6 +37,18 @@ const TYPE_ICON: Record<string, LucideIcon> = {
   amistoso: Handshake,
   torneo: Award,
 };
+
+/** Non-`programada` states worth a status label in a chip's tooltip —
+ *  `programada` (still open) stays unlabeled since that's the default. */
+const STATUS_KEY: Record<string, string> = {
+  realizada: "statusRealizada",
+  suspendida: "statusSuspendida",
+  cancelada: "statusCancelada",
+};
+
+function isClosed(s: CalendarSessionItem) {
+  return s.estado === "realizada";
+}
 
 /** px of pointer movement before a tap on a session chip becomes a drag. */
 const DRAG_THRESHOLD = 6;
@@ -400,6 +413,7 @@ export function AttendanceCalendar({
             const Icon = TYPE_ICON[s.tipo] ?? Dumbbell;
             const mine = isMine(s);
             const label = sessionLabel(s);
+            const statusKey = STATUS_KEY[s.estado];
             return (
               <Link
                 key={s.id}
@@ -410,19 +424,28 @@ export function AttendanceCalendar({
                   "flex items-center gap-1.5 truncate rounded-md border-l-2 px-2 py-1.5 text-[0.72rem] leading-tight hover:brightness-95",
                   mine && "cursor-grab touch-none select-none active:cursor-grabbing",
                   s.estado === "cancelada" && "opacity-50 line-through",
+                  isClosed(s) && "opacity-70",
                   drag?.id === s.id && "opacity-40",
                 )}
                 style={{
                   borderLeftColor: s.color,
                   backgroundColor: `${s.color}1a`,
                 }}
-                title={`${label} · ${s.horaInicio?.slice(0, 5) ?? ""}`}
+                title={[label, s.horaInicio?.slice(0, 5), statusKey ? t(statusKey) : null]
+                  .filter(Boolean)
+                  .join(" · ")}
               >
                 <Icon className="size-3.5 shrink-0" style={{ color: s.color }} />
                 <span className="truncate">
                   {s.horaInicio ? `${s.horaInicio.slice(0, 5)} ` : ""}
                   {label}
                 </span>
+                {isClosed(s) && (
+                  <CircleCheck
+                    aria-hidden
+                    className="size-3 shrink-0 text-status-good-fg"
+                  />
+                )}
               </Link>
             );
           })}
@@ -511,6 +534,7 @@ export function AttendanceCalendar({
       <div className="space-y-1 border-b border-line p-2">
         {untimed.map((s) => {
           const Icon = TYPE_ICON[s.tipo] ?? Dumbbell;
+          const statusKey = STATUS_KEY[s.estado];
           return (
             <Link
               key={s.id}
@@ -518,11 +542,18 @@ export function AttendanceCalendar({
               className={cn(
                 "flex items-center gap-1.5 truncate rounded-md border-l-2 px-2 py-1.5 text-[0.72rem] leading-tight hover:brightness-95",
                 s.estado === "cancelada" && "opacity-50 line-through",
+                isClosed(s) && "opacity-70",
               )}
               style={{ borderLeftColor: s.color, backgroundColor: `${s.color}1a` }}
+              title={[sessionLabel(s), statusKey ? t(statusKey) : null]
+                .filter(Boolean)
+                .join(" · ")}
             >
               <Icon className="size-3.5 shrink-0" style={{ color: s.color }} />
               <span className="truncate">{sessionLabel(s)}</span>
+              {isClosed(s) && (
+                <CircleCheck aria-hidden className="size-3 shrink-0 text-status-good-fg" />
+              )}
             </Link>
           );
         })}
@@ -576,6 +607,7 @@ export function AttendanceCalendar({
               const top = (start / 60) * PX_PER_HOUR;
               const height = Math.max(((end - start) / 60) * PX_PER_HOUR, 26);
               const widthPct = 100 / columns;
+              const statusKey = STATUS_KEY[s.estado];
               return (
                 <Link
                   key={s.id}
@@ -583,6 +615,7 @@ export function AttendanceCalendar({
                   className={cn(
                     "absolute flex items-start gap-1.5 overflow-hidden rounded-md border-l-2 px-2 py-1 text-[0.72rem] leading-tight hover:brightness-95",
                     s.estado === "cancelada" && "opacity-50 line-through",
+                    isClosed(s) && "opacity-70",
                   )}
                   style={{
                     top,
@@ -592,12 +625,20 @@ export function AttendanceCalendar({
                     borderLeftColor: s.color,
                     backgroundColor: `${s.color}1a`,
                   }}
-                  title={`${sessionLabel(s)} · ${s.horaInicio?.slice(0, 5) ?? ""}`}
+                  title={[sessionLabel(s), s.horaInicio?.slice(0, 5), statusKey ? t(statusKey) : null]
+                    .filter(Boolean)
+                    .join(" · ")}
                 >
                   <Icon className="mt-px size-3.5 shrink-0" style={{ color: s.color }} />
                   <span className="truncate">
                     {s.horaInicio?.slice(0, 5)} {sessionLabel(s)}
                   </span>
+                  {isClosed(s) && (
+                    <CircleCheck
+                      aria-hidden
+                      className="mt-px size-3 shrink-0 text-status-good-fg"
+                    />
+                  )}
                 </Link>
               );
             })}
