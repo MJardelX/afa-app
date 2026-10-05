@@ -203,7 +203,9 @@
     "selectOne": "Elegí una opción.",
     "endBeforeStart": "El fin debe ser posterior al inicio.",
     "invalidColor": "Ingresá un color válido.",
-    "invalidTime": "Ingresá una hora válida."
+    "invalidTime": "Ingresá una hora válida.",
+    "passwordMismatch": "Las contraseñas no coinciden.",
+    "samePassword": "Elegí una contraseña distinta a la actual."
   },
   "errors": {
     "generic": "No se pudo guardar el cambio. Intentá de nuevo.",
@@ -816,6 +818,20 @@
     "role": "Rol",
     "academy": "Academia",
     "themeHint": "Claro u oscuro",
-    "languageHint": "Idioma de la interfaz"
+    "languageHint": "Idioma de la interfaz",
+    "securityTitle": "Contraseña",
+    "currentPasswordLabel": "Contraseña actual",
+    "newPasswordLabel": "Nueva contraseña",
+    "newPasswordHint": "Al menos 8 caracteres.",
+    "confirmPasswordLabel": "Confirmá la nueva contraseña",
+    "show": "Mostrar",
+    "hide": "Ocultar",
+    "securitySubmit": "Actualizar contraseña",
+    "securitySubmitting": "Actualizando…",
+    "securitySuccess": "Contraseña actualizada.",
+    "securityError": "No se pudo actualizar la contraseña. Intentá de nuevo.",
+    "securityWrongCurrent": "Esa no es tu contraseña actual.",
+    "securityWeak": "Elegí una contraseña más segura.",
+    "securityTooMany": "Demasiados intentos. Esperá unos minutos e intentá de nuevo."
   }
 }

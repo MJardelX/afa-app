@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 
 import { signOut } from "@/app/login/actions";
 import { AccountPreferences } from "@/components/app/account-preferences";
+import { ChangePasswordForm } from "@/components/app/change-password-form";
 import { SignOutButton } from "@/components/app/sign-out-button";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -67,6 +68,13 @@ export default async function AccountPage() {
         <Card>
           <CardTitle>{t("prefsTitle")}</CardTitle>
           <AccountPreferences />
+        </Card>
+
+        <Card className="md:col-span-2">
+          <CardTitle>{t("securityTitle")}</CardTitle>
+          <div className="max-w-sm">
+            <ChangePasswordForm />
+          </div>
         </Card>
       </div>
 
