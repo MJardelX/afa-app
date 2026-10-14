@@ -12,7 +12,12 @@ import {
 } from "@/lib/schemas/player";
 import { guardianSchema } from "@/lib/schemas/tutor";
 import { createClient } from "@/lib/supabase/server";
-import { activeSeason, currentProfile, isAdmin } from "@/server/players";
+import {
+  activeSeason,
+  currentProfile,
+  findPlayerByName,
+  isAdmin,
+} from "@/server/players";
 import { searchAllowed } from "@/server/throttle";
 
 export type PlayerFormState = {
@@ -65,6 +70,37 @@ export async function lookupTutorByDpi(dpi: string): Promise<TutorMatch> {
 async function requireAdmin() {
   const profile = await currentProfile();
   return profile && isAdmin(profile.rol) ? profile : null;
+}
+
+/**
+ * "A player with this name already exists" as a field error on `nombres`,
+ * naming the existing player so the admin can go find them. Null when free.
+ */
+async function duplicateNameError(
+  nombres: string,
+  apellidos: string,
+  excludeId?: string,
+): Promise<Record<string, string> | null> {
+  const existing = await findPlayerByName(nombres, apellidos, excludeId);
+  if (!existing) return null;
+  const tp = await getTranslations("players");
+  return {
+    nombres: tp("duplicateName", {
+      name: `${existing.nombres} ${existing.apellidos}`,
+      code: existing.codigo,
+    }),
+  };
+}
+
+/** Wizard step 1 check, called from the client before moving on. */
+export async function verificarNombreJugador(
+  nombres: string,
+  apellidos: string,
+): Promise<string | null> {
+  if (!(await requireAdmin())) return null;
+  if (!nombres.trim() || !apellidos.trim()) return null;
+  const dup = await duplicateNameError(nombres, apellidos);
+  return dup?.nombres ?? null;
 }
 
 async function fieldErrors(
@@ -156,6 +192,10 @@ export async function crearJugadorCompleto(
   const v = parsed.data;
   const g = guardian.data;
   const e = enroll.data;
+
+  const dup = await duplicateNameError(v.nombres, v.apellidos);
+  if (dup) return { fieldErrors: dup };
+
   const supabase = await createClient();
 
   const season = await activeSeason();
@@ -274,6 +314,13 @@ export async function actualizarJugador(
   if (!parsed.success) {
     return { fieldErrors: await fieldErrors(parsed.error.issues) };
   }
+
+  const dup = await duplicateNameError(
+    parsed.data.nombres,
+    parsed.data.apellidos,
+    id,
+  );
+  if (dup) return { fieldErrors: dup };
 
   const supabase = await createClient();
   const { error } = await supabase

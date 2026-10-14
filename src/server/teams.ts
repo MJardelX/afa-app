@@ -1,4 +1,4 @@
-import { sanitizeSearch } from "@/lib/search";
+import { nameSearchFilter, sanitizeSearch } from "@/lib/search";
 import { createClient } from "@/lib/supabase/server";
 
 /** Squad member that can be assigned as a team's coach or assistant. */
@@ -217,7 +217,7 @@ export async function searchEnrollCandidates(
     .select(
       "id, nombre_completo, codigo, edad_deportiva, categoria_por_edad, categoria_por_edad_id, categoria_por_edad_edad_min, equipo_id, equipo, inscripcion_id",
     )
-    .or(`nombres.ilike.%${t}%,apellidos.ilike.%${t}%,codigo.ilike.%${t}%`)
+    .or(nameSearchFilter(t, "nombre_normalizado", ["codigo"])!)
     .eq("estado", "activo")
     .limit(10);
 

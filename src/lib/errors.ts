@@ -18,6 +18,7 @@ type DbError = {
 const BY_CONSTRAINT: Record<string, string> = {
   equipos_temporada_id_nombre_key: "teamNameTaken",
   inscripcion_camiseta_unica: "shirtTaken",
+  jugador_nombre_unico: "playerNameTaken",
   inscripcion_principal_unica: "primaryTeamExists",
   jugador_contacto_principal_unico: "primaryContactExists",
   temporada_activa_unica: "activeSeasonExists",

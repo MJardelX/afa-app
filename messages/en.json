@@ -203,7 +203,9 @@
     "selectOne": "Choose an option.",
     "endBeforeStart": "The end must be after the start.",
     "invalidColor": "Enter a valid color.",
-    "invalidTime": "Enter a valid time."
+    "invalidTime": "Enter a valid time.",
+    "passwordMismatch": "Passwords don't match.",
+    "samePassword": "Choose a different password than your current one."
   },
   "errors": {
     "generic": "The change couldn't be saved. Please try again.",
@@ -226,7 +228,8 @@
     "periodDates": "The end date must be after the start date.",
     "notEnrolled": "The player isn't enrolled in that team on that date.",
     "teamBelowAge": "That team's training group is younger than the player's by age. A player can only move up in group, never down.",
-    "teamNameTaken": "That team name is already used this season."
+    "teamNameTaken": "That team name is already used this season.",
+    "playerNameTaken": "A player with this name already exists."
   },
   "players": {
     "metaTitle": "Players · AFA Manager",
@@ -426,7 +429,8 @@
     "wizReviewName": "Player",
     "wizReviewCategory": "Training group",
     "wizReviewTeam": "Team",
-    "noTeamYet": "No team yet"
+    "noTeamYet": "No team yet",
+    "duplicateName": "A player with this name already exists: {name} ({code})."
   },
   "tutors": {
     "metaTitle": "Guardians · AFA Manager",
@@ -727,7 +731,8 @@
     "markStatePresente": "Present",
     "markStateTarde": "Late",
     "markStateJustificado": "Excused",
-    "markStateAusente": "Absent"
+    "markStateAusente": "Absent",
+    "attendanceLocked": "This session is closed. Reopen it to edit the attendance."
   },
   "evaluation": {
     "metaTitle": "Assessment · AFA Manager",
@@ -816,6 +821,20 @@
     "role": "Role",
     "academy": "Academy",
     "themeHint": "Light or dark",
-    "languageHint": "Interface language"
+    "languageHint": "Interface language",
+    "securityTitle": "Password",
+    "currentPasswordLabel": "Current password",
+    "newPasswordLabel": "New password",
+    "newPasswordHint": "At least 8 characters.",
+    "confirmPasswordLabel": "Confirm new password",
+    "show": "Show",
+    "hide": "Hide",
+    "securitySubmit": "Update password",
+    "securitySubmitting": "Updating…",
+    "securitySuccess": "Password updated.",
+    "securityError": "Couldn't update the password. Please try again.",
+    "securityWrongCurrent": "That's not your current password.",
+    "securityWeak": "Choose a stronger password.",
+    "securityTooMany": "Too many attempts. Wait a few minutes and try again."
   }
 }

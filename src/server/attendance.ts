@@ -92,7 +92,11 @@ export type CalendarSessionItem = {
   equipo: string | null;
 };
 
-/** Sessions with `fecha` in [from, to] (inclusive), for the calendar grid. */
+/**
+ * Sessions with `fecha` in [from, to] (inclusive), for the calendar grid.
+ * Cancelled sessions are left out — they stay in the DB (with any attendance
+ * already taken) but no longer clutter the calendar.
+ */
 export async function listSessions(
   from: string,
   to: string,
@@ -103,6 +107,7 @@ export async function listSessions(
     .select(
       "id, categoria_id, equipo_id, tipo, fecha, hora_inicio, hora_fin, lugar, rival, estado, categoria:categorias(nombre, color), equipos(nombre, categorias(nombre, color))",
     )
+    .neq("estado", "cancelada")
     .gte("fecha", from)
     .lte("fecha", to)
     .order("fecha")
@@ -200,6 +205,19 @@ export async function canManageCategory(
     .or(`entrenador_id.eq.${profile.id},auxiliar_id.eq.${profile.id}`)
     .limit(1);
   return !!data && data.length > 0;
+}
+
+/**
+ * Whether `profile` may take attendance (and close / reopen) on any session
+ * of the academy — every staff role can, not just the session's coaches.
+ */
+export function canTakeAttendance(profile: { rol: string } | null) {
+  return (
+    !!profile &&
+    (profile.rol === "director" ||
+      profile.rol === "coordinador" ||
+      profile.rol === "entrenador")
+  );
 }
 
 /** Whether `profile` may write this session (category- or team-scoped). */

@@ -42,10 +42,14 @@ const dangerActionClass =
 export function SessionDetailPanel({
   session,
   manage,
+  takeAttendance,
   locale,
 }: {
   session: SessionFormData & { color: string; estado: string };
+  /** Edit / cancel the session itself. */
   manage: boolean;
+  /** Close / reopen after taking attendance — any staff member. */
+  takeAttendance: boolean;
   locale: string;
 }) {
   const t = useTranslations("attendance");
@@ -98,16 +102,18 @@ export function SessionDetailPanel({
         {session.notas && <Detail term={t("fNotes")}>{session.notas}</Detail>}
       </DetailList>
 
-      {manage && (
+      {(manage || takeAttendance) && (
         <div className="flex flex-wrap items-center gap-2 border-t border-line pt-4">
-          <button
-            type="button"
-            onClick={() => setEditing(true)}
-            className={buttonClasses("secondary", "sm")}
-          >
-            <Pencil className="size-3.5" />
-            {tc("edit")}
-          </button>
+          {manage && (
+            <button
+              type="button"
+              onClick={() => setEditing(true)}
+              className={buttonClasses("secondary", "sm")}
+            >
+              <Pencil className="size-3.5" />
+              {tc("edit")}
+            </button>
+          )}
 
           {session.estado === "programada" && (
             <StatusButton id={session.id} estado="realizada" variant="primary">
@@ -115,14 +121,16 @@ export function SessionDetailPanel({
               {t("close")}
             </StatusButton>
           )}
-          {session.estado !== "programada" && (
+          {(manage
+            ? session.estado !== "programada"
+            : session.estado === "realizada") && (
             <StatusButton id={session.id} estado="programada" variant="secondary">
               <RotateCcw className="size-3.5" />
               {t("reopen")}
             </StatusButton>
           )}
 
-          {session.estado === "programada" && (
+          {manage && session.estado === "programada" && (
             <form action={cambiarEstadoSesion} className="ml-auto">
               <input type="hidden" name="id" value={session.id} />
               <input type="hidden" name="estado" value="cancelada" />

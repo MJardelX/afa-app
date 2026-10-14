@@ -33,6 +33,15 @@ export function ConfirmButton({
   const ref = useRef<HTMLDivElement>(null);
   const { pending } = useFormStatus();
 
+  // Close once the action settles. Closing in the submit button's onClick
+  // unmounts it before the browser runs the click's default action, so the
+  // form never submits.
+  const [wasPending, setWasPending] = useState(pending);
+  if (pending !== wasPending) {
+    setWasPending(pending);
+    if (!pending) setOpen(false);
+  }
+
   return (
     <div ref={ref} className="relative inline-block">
       <button
@@ -72,7 +81,6 @@ export function ConfirmButton({
               <button
                 type="submit"
                 disabled={pending}
-                onClick={() => setOpen(false)}
                 className={cn(
                   "inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-brand-fg disabled:opacity-60",
                   tone === "danger" ? "bg-danger" : "bg-brand hover:bg-brand-hover",

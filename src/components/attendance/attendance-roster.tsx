@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Check, Clock, ShieldCheck, X, type LucideIcon } from "lucide-react";
+import { Check, Clock, Lock, ShieldCheck, X, type LucideIcon } from "lucide-react";
 
 import {
   registrarAsistencia,
@@ -67,11 +67,14 @@ export function AttendanceRoster({
   roster,
   existing,
   isMatch,
+  locked,
 }: {
   sessionId: string;
   roster: RosterEntry[];
   existing: ExistingMark[];
   isMatch: boolean;
+  /** Session is completed / cancelled: show the marks, but read-only. */
+  locked: boolean;
 }) {
   const t = useTranslations("attendance");
   const tc = useTranslations("common");
@@ -171,14 +174,25 @@ export function AttendanceRoster({
 
   return (
     <div className="space-y-3">
+      {locked && (
+        <p className="flex items-center gap-2 rounded-lg bg-surface-2/60 px-3 py-2 text-xs text-muted">
+          <Lock className="size-3.5 shrink-0" />
+          {t("attendanceLocked")}
+        </p>
+      )}
+
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <button
-          type="button"
-          onClick={markAllPresent}
-          className="text-xs font-medium text-brand-legible hover:underline"
-        >
-          {t("markAllPresent")}
-        </button>
+        {locked ? (
+          <span />
+        ) : (
+          <button
+            type="button"
+            onClick={markAllPresent}
+            className="text-xs font-medium text-brand-legible hover:underline"
+          >
+            {t("markAllPresent")}
+          </button>
+        )}
         {marked.length > 0 && (
           <div className="flex items-center gap-2 text-xs text-muted">
             <span>{t("markedCount", { marked: marked.length, total: roster.length })}</span>
@@ -227,10 +241,13 @@ export function AttendanceRoster({
                       title={t(STATE_LABEL_KEY[s])}
                       aria-label={t(STATE_LABEL_KEY[s])}
                       aria-pressed={active}
+                      disabled={locked}
                       onClick={() => update(p.jugadorId, { estado: s })}
                       className={cn(
-                        "inline-flex size-8 items-center justify-center rounded-lg transition-colors",
-                        active ? STATE_ACTIVE_CLASS[s] : "bg-surface-2 text-faint hover:text-muted",
+                        "inline-flex size-8 items-center justify-center rounded-lg transition-colors disabled:cursor-not-allowed",
+                        active
+                          ? STATE_ACTIVE_CLASS[s]
+                          : cn("bg-surface-2 text-faint", locked ? "opacity-40" : "hover:text-muted"),
                       )}
                     >
                       <Icon className="size-4" />
@@ -247,6 +264,7 @@ export function AttendanceRoster({
                       type="number"
                       min={0}
                       max={120}
+                      disabled={locked}
                       value={mark.minutos}
                       onChange={(e) => update(p.jugadorId, { minutos: e.target.value })}
                       className="h-7 w-14 rounded-md border border-line bg-canvas px-1.5 text-center text-xs outline-none focus:border-brand"
@@ -257,6 +275,7 @@ export function AttendanceRoster({
                     <input
                       type="number"
                       min={0}
+                      disabled={locked}
                       value={mark.goles}
                       onChange={(e) => update(p.jugadorId, { goles: e.target.value })}
                       className="h-7 w-12 rounded-md border border-line bg-canvas px-1.5 text-center text-xs outline-none focus:border-brand"
@@ -267,6 +286,7 @@ export function AttendanceRoster({
                     <input
                       type="number"
                       min={0}
+                      disabled={locked}
                       value={mark.asistencias}
                       onChange={(e) => update(p.jugadorId, { asistencias: e.target.value })}
                       className="h-7 w-12 rounded-md border border-line bg-canvas px-1.5 text-center text-xs outline-none focus:border-brand"
@@ -281,19 +301,21 @@ export function AttendanceRoster({
 
       {error && <p className="text-xs text-danger">{error}</p>}
 
-      <div className="flex items-center justify-end gap-3 border-t border-line pt-3">
-        {saved && dirtyIds.size === 0 && (
-          <span className="text-xs text-status-good-fg">{t("markSaved")}</span>
-        )}
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={saving || dirtyIds.size === 0}
-          className={buttonClasses("primary", "sm")}
-        >
-          {saving ? tc("saving") : t("markSave")}
-        </button>
-      </div>
+      {!locked && (
+        <div className="flex items-center justify-end gap-3 border-t border-line pt-3">
+          {saved && dirtyIds.size === 0 && (
+            <span className="text-xs text-status-good-fg">{t("markSaved")}</span>
+          )}
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={saving || dirtyIds.size === 0}
+            className={buttonClasses("primary", "sm")}
+          >
+            {saving ? tc("saving") : t("markSave")}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

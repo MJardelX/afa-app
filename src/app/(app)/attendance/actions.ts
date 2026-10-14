@@ -1,13 +1,18 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { errorMessage } from "@/lib/errors";
 import { generateSchema, sessionSchema } from "@/lib/schemas/attendance";
 import { createClient } from "@/lib/supabase/server";
 import { activeSeason, currentProfile, isAdmin } from "@/server/players";
-import { canManageCategory, canManageSession } from "@/server/attendance";
+import {
+  canManageCategory,
+  canManageSession,
+  canTakeAttendance,
+} from "@/server/attendance";
 
 const ATTENDANCE_STATES = ["presente", "tarde", "justificado", "ausente"] as const;
 export type AttendanceState = (typeof ATTENDANCE_STATES)[number];
@@ -141,7 +146,11 @@ const SESSION_STATES = [
   "cancelada",
 ] as const;
 
-/** Plain action: change status (close / suspend / cancel / reopen). */
+/**
+ * Plain action: change status (close / suspend / cancel / reopen). Closing
+ * and reopening are part of taking attendance, so any staff member may do
+ * them; suspending / cancelling stays with whoever manages the session.
+ */
 export async function cambiarEstadoSesion(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   const raw = String(formData.get("estado") ?? "");
@@ -154,19 +163,29 @@ export async function cambiarEstadoSesion(formData: FormData) {
   const supabase = await createClient();
   const { data: s } = await supabase
     .from("sesiones")
-    .select("categoria_id, equipo_id")
+    .select("categoria_id, equipo_id, estado")
     .eq("id", id)
     .maybeSingle();
   if (!s) return;
-  const allowed = await canManageSession(
-    { categoriaId: s.categoria_id, equipoId: s.equipo_id },
-    profile,
-  );
+  const attendanceStep =
+    (estado === "realizada" || estado === "programada") &&
+    (s.estado === "programada" || s.estado === "realizada");
+  const allowed =
+    (attendanceStep && canTakeAttendance(profile)) ||
+    (await canManageSession(
+      { categoriaId: s.categoria_id, equipoId: s.equipo_id },
+      profile,
+    ));
   if (!allowed) return;
 
-  await supabase.from("sesiones").update({ estado }).eq("id", id);
+  const { error } = await supabase
+    .from("sesiones")
+    .update({ estado })
+    .eq("id", id);
   revalidatePath("/attendance");
   revalidatePath(`/attendance/${id}`);
+  // Cancelled sessions are hidden from the calendar, so go back to it.
+  if (!error && estado === "cancelada") redirect("/attendance");
 }
 
 export async function eliminarSesion(formData: FormData) {
@@ -329,21 +348,19 @@ export async function registrarAsistencia(
 ): Promise<{ ok: true } | { error: string }> {
   const ta = await getTranslations("attendance");
   const profile = await currentProfile();
-  if (!profile) return { error: ta("noPermission") };
+  if (!profile || !canTakeAttendance(profile)) {
+    return { error: ta("noPermission") };
+  }
 
   const supabase = await createClient();
   const { data: s } = await supabase
     .from("sesiones")
-    .select("categoria_id, equipo_id")
+    .select("estado")
     .eq("id", sessionId)
     .maybeSingle();
   if (!s) return { error: ta("noPermission") };
-
-  const allowed = await canManageSession(
-    { categoriaId: s.categoria_id, equipoId: s.equipo_id },
-    profile,
-  );
-  if (!allowed) return { error: ta("noPermission") };
+  // Completed / cancelled sessions are read-only until reopened.
+  if (s.estado !== "programada") return { error: ta("attendanceLocked") };
 
   const rows = marks
     .filter((m) => ATTENDANCE_STATES.includes(m.estado))

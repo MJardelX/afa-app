@@ -1,5 +1,5 @@
 import { PAGE_SIZE, rangeFor } from "@/lib/pagination";
-import { sanitizeSearch } from "@/lib/search";
+import { nameSearchFilter, sanitizeSearch } from "@/lib/search";
 import { createClient } from "@/lib/supabase/server";
 
 /** Guardian rows + how many players each is linked to. */
@@ -16,12 +16,8 @@ export async function listTutors({ q, page = 1 }: { q?: string; page?: number })
     .order("nombres")
     .range(from, to);
 
-  const term = sanitizeSearch(q);
-  if (term) {
-    query = query.or(
-      `nombres.ilike.%${term}%,apellidos.ilike.%${term}%,telefono.ilike.%${term}%,dpi.ilike.%${term}%`,
-    );
-  }
+  const filter = nameSearchFilter(q, "nombre_normalizado", ["telefono", "dpi"]);
+  if (filter) query = query.or(filter);
 
   const { data, count, error } = await query;
   if (error) throw error;
@@ -83,9 +79,7 @@ export async function searchTutors(term: string, limit = 8) {
   const { data } = await supabase
     .from("tutores")
     .select("id, nombres, apellidos, telefono, dpi")
-    .or(
-      `nombres.ilike.%${t}%,apellidos.ilike.%${t}%,telefono.ilike.%${t}%,dpi.ilike.%${t}%`,
-    )
+    .or(nameSearchFilter(t, "nombre_normalizado", ["telefono", "dpi"])!)
     .limit(limit);
   return data ?? [];
 }
