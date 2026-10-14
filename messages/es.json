@@ -228,7 +228,8 @@
     "periodDates": "La fecha de fin debe ser posterior a la de inicio.",
     "notEnrolled": "El jugador no está inscrito en ese equipo en esa fecha.",
     "teamBelowAge": "Ese equipo es de un grupo de entrenamiento menor al que le corresponde al jugador por edad. Solo puede subir de grupo, nunca bajar.",
-    "teamNameTaken": "Ese nombre de equipo ya está usado esta temporada."
+    "teamNameTaken": "Ese nombre de equipo ya está usado esta temporada.",
+    "playerNameTaken": "Ya existe un jugador con este nombre."
   },
   "players": {
     "metaTitle": "Jugadores · AFA Manager",
@@ -428,7 +429,8 @@
     "wizReviewName": "Jugador",
     "wizReviewCategory": "Grupo de entrenamiento",
     "wizReviewTeam": "Equipo",
-    "noTeamYet": "Sin equipo todavía"
+    "noTeamYet": "Sin equipo todavía",
+    "duplicateName": "Ya existe un jugador con este nombre: {name} ({code})."
   },
   "tutors": {
     "metaTitle": "Encargados · AFA Manager",
@@ -729,7 +731,8 @@
     "markStatePresente": "Presente",
     "markStateTarde": "Tarde",
     "markStateJustificado": "Justificado",
-    "markStateAusente": "Ausente"
+    "markStateAusente": "Ausente",
+    "attendanceLocked": "Esta sesión está cerrada. Para editar la asistencia, primero hay que reabrirla."
   },
   "evaluation": {
     "metaTitle": "Evaluación · AFA Manager",

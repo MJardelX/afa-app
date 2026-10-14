@@ -1,5 +1,5 @@
 import { PAGE_SIZE, rangeFor } from "@/lib/pagination";
-import { sanitizeSearch } from "@/lib/search";
+import { nameSearchFilter, normalizeText } from "@/lib/search";
 import { createClient } from "@/lib/supabase/server";
 
 export type PlayerStatus = "activo" | "inactivo" | "retirado" | "egresado";
@@ -35,12 +35,8 @@ export async function listPlayers(f: PlayerListFilters) {
 
   if (f.flag) query = query.eq(f.flag, true);
 
-  const q = sanitizeSearch(f.q);
-  if (q) {
-    query = query.or(
-      `nombres.ilike.%${q}%,apellidos.ilike.%${q}%,codigo.ilike.%${q}%`,
-    );
-  }
+  const filter = nameSearchFilter(f.q, "nombre_normalizado", ["codigo"]);
+  if (filter) query = query.or(filter);
 
   const { data, count, error } = await query;
   if (error) throw error;
@@ -51,6 +47,29 @@ export async function listPlayers(f: PlayerListFilters) {
     page,
     pageSize: PAGE_SIZE,
   };
+}
+
+/**
+ * An existing player (any status) whose full name matches ignoring accents,
+ * case and extra spaces — "Jose Xiquita" vs "José  xiquita". The DB enforces
+ * the same rule with the `jugador_nombre_unico` index; this lets the form
+ * say *which* player it collides with. `excludeId` skips the player being
+ * edited.
+ */
+export async function findPlayerByName(
+  nombres: string,
+  apellidos: string,
+  excludeId?: string,
+) {
+  const supabase = await createClient();
+  let query = supabase
+    .from("jugadores")
+    .select("id, codigo, nombres, apellidos")
+    .eq("nombre_normalizado", normalizeText(`${nombres} ${apellidos}`))
+    .limit(1);
+  if (excludeId) query = query.neq("id", excludeId);
+  const { data } = await query.maybeSingle();
+  return data;
 }
 
 /** The active season (for the form's sporting-age preview). */

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 
 import { errorMessage } from "@/lib/errors";
-import { sanitizeSearch } from "@/lib/search";
+import { nameSearchFilter, sanitizeSearch } from "@/lib/search";
 import { relationshipSchema } from "@/lib/schemas/tutor";
 import { createClient } from "@/lib/supabase/server";
 import { currentProfile, isAdmin } from "@/server/players";
@@ -37,9 +37,7 @@ export async function buscarTutores(jugadorId: string, term: string) {
   let query = supabase
     .from("tutores")
     .select("id, nombres, apellidos, telefono, dpi")
-    .or(
-      `nombres.ilike.%${t}%,apellidos.ilike.%${t}%,telefono.ilike.%${t}%,dpi.ilike.%${t}%`,
-    )
+    .or(nameSearchFilter(t, "nombre_normalizado", ["telefono", "dpi"])!)
     .limit(8);
 
   if (exclude.length) query = query.not("id", "in", `(${exclude.join(",")})`);

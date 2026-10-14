@@ -3,11 +3,12 @@
 import { useActionState, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { ArrowRight, Calendar, Check, IdCard, User } from "lucide-react";
+import { ArrowRight, Calendar, Check, IdCard, LoaderCircle, User } from "lucide-react";
 
 import {
   crearJugadorCompleto,
   type PlayerFormState,
+  verificarNombreJugador,
 } from "@/app/(app)/players/actions";
 import { GuardianFields } from "@/components/players/guardian-fields";
 import { buttonClasses } from "@/components/ui/button";
@@ -94,6 +95,7 @@ export function PlayerWizard({
   const [step, setStep] = useState(1);
   const [visited, setVisited] = useState(1); // furthest step reached
   const [clientErrors, setClientErrors] = useState<Record<string, string>>({});
+  const [checkingName, setCheckingName] = useState(false);
   // When a failed submit returns, jump once to the first step with an error.
   const [handledErrorState, setHandledErrorState] =
     useState<PlayerFormState>(null);
@@ -188,11 +190,27 @@ export function PlayerWizard({
     return out;
   }
 
-  function goNext() {
+  async function goNext() {
     const e = validateStep(step);
     if (Object.keys(e).length) {
       setClientErrors(e);
       return;
+    }
+    // Same player already registered (ignoring accents/case)? Say so now,
+    // not after the admin has filled in the remaining steps.
+    if (step === 1) {
+      setCheckingName(true);
+      try {
+        const dup = await verificarNombreJugador(nombres, apellidos);
+        if (dup) {
+          setClientErrors({ nombres: dup });
+          return;
+        }
+      } catch {
+        // Network hiccup: let them continue — the server re-checks on submit.
+      } finally {
+        setCheckingName(false);
+      }
     }
     setClientErrors({});
     const next = Math.min(step + 1, STEP_COUNT);
@@ -601,10 +619,15 @@ export function PlayerWizard({
           <button
             type="button"
             onClick={goNext}
+            disabled={checkingName}
             className={buttonClasses("primary", "md")}
           >
             {t("wizNext")}
-            <ArrowRight className="size-4" strokeWidth={1.9} />
+            {checkingName ? (
+              <LoaderCircle className="size-4 animate-spin" />
+            ) : (
+              <ArrowRight className="size-4" strokeWidth={1.9} />
+            )}
           </button>
         ) : (
           <SubmitButton pendingLabel={tc("saving")}>{t("wizCreate")}</SubmitButton>

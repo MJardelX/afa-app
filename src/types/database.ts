@@ -865,6 +865,7 @@ export type Database = {
           id: string
           lugar_nacimiento: string | null
           nombres: string
+          nombre_normalizado: string | null
           observaciones: string | null
           sexo: string
         }
@@ -1208,6 +1209,7 @@ export type Database = {
           id: string
           lugar_trabajo: string | null
           nombres: string
+          nombre_normalizado: string | null
           ocupacion: string | null
           perfil_id: string | null
           telefono: string | null
@@ -1397,6 +1399,7 @@ export type Database = {
           inscripcion_id: string | null
           motivo_excepcion: string | null
           nombre_completo: string | null
+          nombre_normalizado: string | null
           nombres: string | null
           numero_camiseta: number | null
           posicion: string | null
