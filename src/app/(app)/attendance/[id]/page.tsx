@@ -9,6 +9,7 @@ import { Card, CardTitle } from "@/components/ui/card";
 import { currentProfile } from "@/server/players";
 import {
   canManageSession,
+  canTakeAttendance,
   getSession,
   getSessionAttendance,
   getSessionRoster,
@@ -46,7 +47,9 @@ export default async function SessionDetailPage({
     profile,
   );
 
-  const [roster, attendance] = manage
+  const takeAttendance = canTakeAttendance(profile);
+
+  const [roster, attendance] = takeAttendance
     ? await Promise.all([
         getSessionRoster(
           {
@@ -88,10 +91,11 @@ export default async function SessionDetailPage({
           estado: session.estado,
         }}
         manage={manage}
+        takeAttendance={takeAttendance}
         locale={locale}
       />
 
-      {manage && (
+      {takeAttendance && (
         <Card>
           <CardTitle extra={roster.length > 0 ? String(roster.length) : undefined}>
             {t("roster")}
@@ -106,6 +110,7 @@ export default async function SessionDetailPage({
             }))}
             existing={attendance}
             isMatch={session.tipo !== "entrenamiento"}
+            locked={session.estado !== "programada"}
           />
         </Card>
       )}
